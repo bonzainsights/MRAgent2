@@ -1,0 +1,42 @@
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Node (if any frontend tooling)
+node_modules/
+package-lock.json
+
+# OS
+Thumbs.db
+
+# Agent / AI tooling
+.agent/
+.gemini/
+
+# Runtime data (chats, images, config backups)
+data/

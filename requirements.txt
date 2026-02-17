@@ -1,0 +1,29 @@
+# MRAgent Dependencies
+# Lightweight: pure API-driven, no ML frameworks
+
+# ── Core ──
+openai>=1.0.0              # NVIDIA NIM (OpenAI-compatible SDK)
+requests>=2.31.0           # REST API calls (image gen, search)
+python-dotenv>=1.0.0       # .env file loading
+
+# ── Voice (NVIDIA Riva) ──
+nvidia-riva-client>=2.14.0 # gRPC client for Magpie TTS + Whisper STT
+sounddevice>=0.4.6         # Mic capture & audio playback
+numpy>=1.24.0              # Audio array handling
+
+# ── Terminal UI ──
+rich>=13.0.0               # Rich terminal output (tables, markdown, colors)
+prompt-toolkit>=3.0.0      # Interactive CLI input
+
+# ── Image Handling ──
+Pillow>=10.0.0             # Decode base64 images from API
+
+# ── Screen Capture ──
+pyautogui>=0.9.54          # Cross-platform screenshot
+
+# ── Web ──
+flask>=3.0.0               # Browser UI (optional)
+beautifulsoup4>=4.12.0     # HTML parsing for web browsing
+
+# ── Telegram (optional) ──
+python-telegram-bot>=20.0  # Telegram bot interface

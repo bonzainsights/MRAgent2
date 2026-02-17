@@ -1,0 +1,52 @@
+MRAgent Development Log
+========================
+
+2026-02-15 22:00 — Initial project setup & Phase 1-8 implementation
+2026-02-15 23:16 — All core modules complete (agents, providers, tools, UI, memory)
+
+2026-02-16 10:40 — Fixed NVIDIA NIM model IDs (19ca2eb)
+  - GLM5: thudm/glm-5 → z-ai/glm5
+  - Gemma 3N: google/gemma-3n → google/gemma-3n-e4b-it
+  - Qwen3 Coder: qwen/qwen3-coder → qwen/qwen3-coder-480b-a35b-instruct
+  - Added Llama 3.3 70B as fallback model
+
+2026-02-16 10:50 — Fixed Gemma 3N tool_choice error (244fb93)
+  - Added supports_tools flag per model in MODEL_REGISTRY
+  - Gemma 3N = False (no function calling), rest = True
+  - nvidia_llm.py skips tools/tool_choice for non-supporting models
+
+2026-02-16 10:52 — Fixed tool_call format + search type error (9ac3ca9)
+  - core.py: Added type='function' to tool_call messages for NVIDIA API
+  - brave_search.py: Coerce count to int (LLMs pass '10' as string)
+
+2026-02-16 13:25 — Pushed all commits to GitHub
+
+2026-02-16 13:26 — Improved system prompt (55e48ab)
+  - Explicit tool list so LLM knows capabilities
+  - Guidance: don't use tools for greetings/help
+  - Prevents infinite search_web loop
+
+2026-02-16 13:27 — Reduced console noise (8ba3183)
+  - Console log level: INFO → WARNING
+  - All details still go to data/logs/mragent.log
+  - Use --debug for verbose terminal output
+
+2026-02-16 13:28 — Dual CLI+Web mode + clean startup (389345b)
+  - Added --mode both: Web UI background thread + CLI foreground
+  - Startup info via print() instead of logs
+  - Fatal errors show user-friendly message + log file hint
+
+2026-02-16 13:29 — Plain help/exit/quit support (1a452af)
+  - CLI catches 'help', 'exit', 'quit' without slash prefix
+
+2026-02-16 13:40 — Fixed image generation model (cbd81b6)
+  - SD 3.5 Large → SD 3 Medium (3.5 has no hosted API, download only)
+
+2026-02-16 13:41 — Rewrote nvidia_image.py with correct endpoints (20f06ea)
+  - FLUX.1-dev: prompt + mode='base' format
+  - SD 3 Medium: prompt + aspect_ratio + negative_prompt format
+  - Default model changed to flux-dev
+
+2026-02-16 13:42 — Added generate_image tool for LLM (9045347)
+  - New tools/image_gen.py wraps NVIDIA image provider
+  - LLM can now generate images in chat (no need for /image)
