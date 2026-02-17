@@ -136,3 +136,29 @@ class TelegramBot:
         # Run
         print("✅ Bot is polling. Press Ctrl+C to stop.")
         application.run_polling(allowed_updates=Update.ALL_TYPES)
+
+    async def run_async(self):
+        """Start the bot polling loop asynchronously (for background threads)."""
+        if not self.token:
+            return
+
+        # Build application
+        application = Application.builder().token(self.token).build()
+
+        # Add handlers
+        application.add_handler(CommandHandler("start", start_command))
+        application.add_handler(CommandHandler("help", help_command))
+        application.add_handler(CommandHandler("newchat", newchat_command))
+        
+        # Message handlers
+        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message))
+        application.add_handler(MessageHandler(filters.VOICE, handle_voice_message))
+
+        await application.initialize()
+        await application.start()
+        await application.updater.start_polling(allowed_updates=Update.ALL_TYPES)
+        
+        # Keep running until cancelled
+        # In a real app we'd use a stop signal, here we just wait forever
+        while True:
+            await asyncio.sleep(1)

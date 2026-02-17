@@ -212,6 +212,31 @@ def run_both(args: argparse.Namespace):
     print(f"  ✅ Web UI running at http://localhost:{args.port}")
     print()
 
+    # Launch Telegram Bot if token is present
+    import os
+    if os.getenv("TELEGRAM_BOT_TOKEN"):
+        logger.info("Checks found TELEGRAM_BOT_TOKEN, starting Telegram bot in background...")
+        print("  🤖 Starting Telegram Bot in background...")
+        
+        def _telegram_thread():
+            try:
+                # Suppress telegram logs to avoid cluttering CLI
+                import logging as _logging
+                _logging.getLogger("httpx").setLevel(_logging.WARNING)
+                _logging.getLogger("telegram").setLevel(_logging.WARNING)
+                
+                from ui.telegram_bot import TelegramBot
+                bot = TelegramBot()
+                # Run async loop for telegram
+                import asyncio
+                asyncio.run(bot.run_async())
+            except Exception as e:
+                logger.error(f"Telegram Bot failed: {e}")
+
+        telegram_thread = threading.Thread(target=_telegram_thread, daemon=True)
+        telegram_thread.start()
+        print("  ✅ Telegram Bot running")
+
     # Run CLI in foreground
     run_cli(args)
 
