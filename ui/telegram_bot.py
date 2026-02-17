@@ -84,6 +84,27 @@ async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     else:
         await update.message.reply_text(response_text)
 
+    # Detect and upload images
+    import re
+    image_matches = re.findall(r"!\[.*?\]\((.*?)\)", response_text)
+    
+    if image_matches:
+        for image_path in image_matches:
+            # Clean path (sometimes it might have extra characters or be partial)
+            image_path = image_path.strip()
+            
+            # Ensure it's a local file
+            if os.path.exists(image_path):
+                try:
+                    await context.bot.send_chat_action(chat_id=chat_id, action="upload_photo")
+                    await context.bot.send_photo(chat_id=chat_id, photo=open(image_path, 'rb'))
+                    logger.info(f"Sent image to Telegram: {image_path}")
+                except Exception as e:
+                    logger.error(f"Failed to send image {image_path}: {e}")
+                    await update.message.reply_text(f"❌ Failed to upload image: {e}")
+            else:
+                logger.warning(f"Image path not found: {image_path}")
+
 
 async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle incoming voice messages."""
