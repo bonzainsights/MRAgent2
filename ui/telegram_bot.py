@@ -17,7 +17,7 @@ from telegram.ext import (
 
 from agents.core import AgentCore
 from config.settings import DEFAULTS
-from utils.logger import get_logger, setup_logging
+from utils.logger import get_logger
 
 logger = get_logger("ui.telegram")
 
