@@ -6,6 +6,7 @@ Created: 2026-02-15
 """
 
 import sys
+import os
 
 from agents.core import AgentCore
 from memory.chat_store import ChatStore
@@ -27,6 +28,7 @@ COMMANDS = {
     "/history":  "Show recent chat history",
     "/stats":    "Show agent statistics",
     "/clear":    "Clear the screen",
+    "/skills":   "Configure API skills (Telegram, AgentMail...)",
     "/exit":     "Exit MRAgent",
 }
 
@@ -274,6 +276,9 @@ class CLIInterface:
         elif command == "/clear":
             print("\033[2J\033[H", end="")  # ANSI clear
 
+        elif command == "/skills":
+            self._configure_skills()
+
         else:
             self._print_info(f"Unknown command: {command}. Type /help for commands.")
 
@@ -304,6 +309,61 @@ class CLIInterface:
             self._print_response(result)
         except Exception as e:
             self._print_info(f"❌ Search failed: {e}")
+
+    def _configure_skills(self):
+        """Interactive skills configuration."""
+        self._print_info("\n🧩 Skills Configuration")
+        self._print_info("-----------------------")
+        
+        options = {
+            "1": ("Telegram Bot", ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"]),
+            "2": ("AgentMail", ["AGENTMAIL_API_KEY"]),
+            "3": ("Brave Search", ["BRAVE_SEARCH_API_KEY"]),
+            "4": ("NVIDIA API", ["NVIDIA_BASE_URL", "NVIDIA_KIMI_K2_5"]), # Just examples
+        }
+        
+        for key, (name, _) in options.items():
+            print(f"  {key}. {name}")
+        print("  0. Cancel")
+        
+        choice = self._get_input_clean("Select a skill to configure (0-4): ")
+        
+        if choice == "0" or choice not in options:
+            self._print_info("Configuration cancelled.")
+            return
+
+        skill_name, env_vars = options[choice]
+        self._print_info(f"\nConfiguring {skill_name}...")
+        
+        changes_made = False
+        from utils.config_manager import update_env_key
+        
+        for var in env_vars:
+            current_val = os.getenv(var, "")
+            display_val = f"{current_val[:4]}...{current_val[-4:]}" if current_val and len(current_val) > 8 else (current_val or "Not set")
+            
+            print(f"\n{var}")
+            print(f"Current: {display_val}")
+            new_val = self._get_input_clean(f"Enter new value (Press Enter to keep): ")
+            
+            if new_val:
+                if update_env_key(var, new_val):
+                    print(f"✅ Updated {var}")
+                    changes_made = True
+                else:
+                    print(f"❌ Failed to update {var}")
+        
+        if changes_made:
+            self._print_info("\n✅ Configuration updated! Please restart MRAgent for changes to take effect.")
+        else:
+            self._print_info("\nNo changes made.")
+
+    def _get_input_clean(self, prompt: str) -> str:
+        """Helper to get raw input without rich formatting issues."""
+        try:
+            return input(prompt).strip()
+        except EOFError:
+            return ""
 
     def _capture_screen(self):
         """Capture and analyze the screen."""
