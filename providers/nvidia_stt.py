@@ -1,154 +1,97 @@
 """
 MRAgent — NVIDIA Speech-to-Text Provider
-Uses NVIDIA Riva gRPC API (Whisper Large v3) for audio transcription.
+Uses NVIDIA NIM HTTP API (OpenAI-compatible) for audio transcription.
+Avoids heavy dependencies like grpc/riva/ffmpeg.
 
 Created: 2026-02-15
-
-Note: Requires nvidia-riva-client package.
-Falls back gracefully if not installed.
+Updated: 2026-02-17 (Switch to HTTP API)
 """
 
+import io
 import time
+from openai import OpenAI
 
 from providers.base import STTProvider
-from config.settings import NVIDIA_KEYS
+from config.settings import NVIDIA_BASE_URL, get_api_key
 from utils.logger import get_logger
 
 logger = get_logger("providers.nvidia_stt")
 
-# STT configuration
-RIVA_STT_URI = "grpc.nvcf.nvidia.com:443"
-WHISPER_FUNCTION_ID = "1598d209-5e27-4d3c-8079-4751568b1081"
-
 
 class NvidiaSTTProvider(STTProvider):
     """
-    NVIDIA Riva STT provider using Whisper Large v3 via gRPC.
-    Transcribes audio (from mic or file) to text.
+    NVIDIA NIM STT provider using OpenAI-compatible HTTP API.
+    Transcribes audio to text using 'nvidia/whisper-large-v3'.
     """
 
     def __init__(self, rate_limit_rpm: int = 35):
         super().__init__(name="nvidia_stt", rate_limit_rpm=rate_limit_rpm)
-        self._riva_available = False
-        self._asr_service = None
-        self._init_riva()
+        self.model = "nvidia/whisper-large-v3"
+        self._client = None
+        self._init_client()
 
-    def _init_riva(self):
-        """Initialize Riva client. Graceful fallback if not installed."""
-        try:
-            import riva.client
-            self._riva = riva.client
-            self._riva_available = True
-            self.logger.info("NVIDIA Riva STT client loaded")
-        except ImportError:
-            self._riva_available = False
-            self.logger.warning(
-                "nvidia-riva-client not installed. STT disabled. "
-                "Install with: pip install nvidia-riva-client"
+    def _init_client(self):
+        """Initialize OpenAI client for NVIDIA NIM."""
+        api_key = get_api_key("whisper_lv3")
+        if api_key:
+            self._client = OpenAI(
+                base_url=NVIDIA_BASE_URL,
+                api_key=api_key,
             )
-
-    def _get_service(self):
-        """Get or create the ASR service connection."""
-        if self._asr_service is not None:
-            return self._asr_service
-
-        if not self._riva_available:
-            raise RuntimeError("nvidia-riva-client not installed")
-
-        api_key = NVIDIA_KEYS.get("whisper_lv3", "")
-        if not api_key:
-            raise ValueError("NVIDIA_WHISPER_LV3 API key not set")
-
-        auth = self._riva.Auth(
-            uri=RIVA_STT_URI,
-            use_ssl=True,
-            metadata_args=[
-                ["function-id", WHISPER_FUNCTION_ID],
-                ["authorization", f"Bearer {api_key}"],
-            ],
-        )
-        self._asr_service = self._riva.ASRService(auth)
-        self.logger.info("Connected to NVIDIA Riva STT service")
-        return self._asr_service
+            self.logger.info("NVIDIA STT (HTTP) client initialized")
+        else:
+            self.logger.warning("NVIDIA_WHISPER_LV3 key not found. STT disabled.")
 
     def speech_to_text(self, audio_bytes: bytes,
-                       language: str = "en-US",
+                       language: str = "en",
                        sample_rate: int = 16000) -> str:
         """
         Transcribe audio bytes to text.
 
         Args:
-            audio_bytes: Raw PCM audio data (16-bit, mono)
-            language: Language code
-            sample_rate: Audio sample rate in Hz
+            audio_bytes: Raw audio data (or OGG/MP3 bytes)
+            language: Language code (ISO-639-1)
+            sample_rate: Ignored for HTTP API (handled by server)
 
         Returns:
             Transcribed text string
         """
-        if not self._riva_available:
-            raise RuntimeError("STT not available — install nvidia-riva-client")
+        if not self._client:
+            raise RuntimeError("STT not available — missing API key")
 
-        self.logger.info(f"STT: transcribing {len(audio_bytes)} bytes of audio")
+        self.logger.info(f"STT: transcribing {len(audio_bytes)} bytes")
         start_time = time.time()
 
         def _make_request():
-            service = self._get_service()
-            config = self._riva.RecognitionConfig(
-                encoding=self._riva.AudioEncoding.LINEAR_PCM,
-                language_code=language,
-                max_alternatives=1,
-                enable_automatic_punctuation=True,
-                sample_rate_hertz=sample_rate,
-                audio_channel_count=1,
+            # Wrap bytes in a named file-like object so OpenAI client detects it as a file
+            # Telegram voice is usually OGG via Opus
+            audio_file = io.BytesIO(audio_bytes)
+            audio_file.name = "voice.ogg" 
+
+            return self._client.audio.transcriptions.create(
+                model=self.model,
+                file=audio_file,
+                language=language,
+                response_format="json"
             )
-            response = service.offline_recognize(audio_bytes, config)
-            return response
 
         try:
             response = self._retry_call(_make_request)
             duration_ms = (time.time() - start_time) * 1000
 
-            # Extract transcript
-            transcript = ""
-            for result in response.results:
-                if result.alternatives:
-                    transcript += result.alternatives[0].transcript + " "
-
-            transcript = transcript.strip()
-            self._track_call("stt/recognize", "whisper-lv3", duration_ms, status="ok")
+            transcript = response.text
+            
+            self._track_call("audio/transcriptions", self.model, duration_ms, status="ok")
             self.logger.info(f"STT result: '{transcript[:80]}...' ({duration_ms:.0f}ms)")
 
             return transcript
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
-            self._track_call("stt/recognize", "whisper-lv3", duration_ms, status=f"error: {e}")
+            self._track_call("audio/transcriptions", self.model, duration_ms, status=f"error: {e}")
             raise
-
-    def create_streaming_config(self, language: str = "en-US",
-                                sample_rate: int = 16000):
-        """
-        Create a streaming recognition config for real-time transcription.
-
-        Returns:
-            StreamingRecognitionConfig for use with streaming API
-        """
-        if not self._riva_available:
-            raise RuntimeError("STT not available — install nvidia-riva-client")
-
-        return self._riva.StreamingRecognitionConfig(
-            config=self._riva.RecognitionConfig(
-                encoding=self._riva.AudioEncoding.LINEAR_PCM,
-                language_code=language,
-                max_alternatives=1,
-                enable_automatic_punctuation=True,
-                sample_rate_hertz=sample_rate,
-                audio_channel_count=1,
-            ),
-            interim_results=True,
-        )
 
     @property
     def available(self) -> bool:
         """Check if STT is available."""
-        return self._riva_available and bool(NVIDIA_KEYS.get("whisper_lv3"))
+        return self._client is not None
