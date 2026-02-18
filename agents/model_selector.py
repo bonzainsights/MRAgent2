@@ -39,6 +39,7 @@ PATTERNS = {
     "browsing": [
         r"\b(search|find|look up|fetch|download|browse|web|news|headline|topic|trend)\b",
         r"\b(url|link|site|page|website)\b",
+        r"\b(time|weather|date|forecast|temperature)\b",
     ],
     "thinking": [
         r"\b(analyze|explain|compare|evaluate|reason|think|plan)\b",
