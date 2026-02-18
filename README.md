@@ -24,18 +24,20 @@
 
 ## 🚀 Features
 
-| Capability               | Description                                                           | Status         |
-| ------------------------ | --------------------------------------------------------------------- | -------------- |
-| 💬 **LLM Chat**          | Multi-model text generation (Kimi K2.5, GLM-5, Gemma 3N, Qwen3 Coder) | 🟡 In Progress |
-| 🎨 **Image Generation**  | Text-to-image via Stable Diffusion 3.5 Large & FLUX Dev               | 🟡 In Progress |
-| 🗣️ **Text-to-Speech**    | Natural voice synthesis via Magpie TTS                                | 🟡 In Progress |
-| 👂 **Speech-to-Text**    | Audio transcription via Whisper Large v3                              | 🟡 In Progress |
-| 🖥️ **Screen Monitoring** | Capture and analyze screen content in real-time                       | 📋 Planned     |
-| 🌐 **Web Browsing**      | Autonomous internet surfing and information gathering                 | 📋 Planned     |
-| 💻 **Code Execution**    | Write, run, and debug code in multiple languages                      | 📋 Planned     |
-| 🔧 **Terminal Access**   | Execute shell commands and system operations                          | 📋 Planned     |
-| 📁 **File Management**   | Navigate, create, move, and organize files                            | 📋 Planned     |
-| 🔍 **Web Search**        | Search the internet via Brave Search API                              | 🟡 In Progress |
+| Capability               | Description                                              | Status         |
+| ------------------------ | -------------------------------------------------------- | -------------- |
+| 💬 **LLM Chat**          | Multi-model text generation (GPT-OSS, Kimi, GLM-5)       | ✅ Implemented |
+| 🎨 **Image Generation**  | Text-to-image via Stable Diffusion 3.5 Large & FLUX Dev  | ✅ Implemented |
+| 🗣️ **Text-to-Speech**    | Natural voice synthesis via **Edge TTS** (Free, Neutral) | ✅ Implemented |
+| 👂 **Speech-to-Text**    | Audio transcription via **Groq Whisper v3** (Ultra-fast) | ✅ Implemented |
+| 📧 **Email Skill**       | Send & receive emails via AgentMail                      | ✅ Implemented |
+| 📱 **Telegram Bot**      | Chat, Voice, & Image interaction                         | ✅ Implemented |
+| 🖥️ **Screen Monitoring** | Capture and analyze screen content in real-time          | 📋 Planned     |
+| 🌐 **Web Browsing**      | Autonomous internet surfing and information gathering    | 📋 Planned     |
+| 💻 **Code Execution**    | Write, run, and debug code in multiple languages         | 📋 Planned     |
+| 🔧 **Terminal Access**   | Execute shell commands and system operations             | 📋 Planned     |
+| 📁 **File Management**   | Navigate, create, move, and organize files               | 📋 Planned     |
+| 🔍 **Web Search**        | Search the internet via Brave Search API                 | 🟡 In Progress |
 
 ---
 
@@ -54,12 +56,16 @@ MRAgent/
 │   ├── core.py           # Core agent orchestration loop
 │   ├── planner.py        # Task planning & decomposition
 │   └── executor.py       # Action execution engine
+├── skills/               # 🆕 Modular Skills System
+│   ├── base.py           # Base skill interface
+│   ├── agentmail.py      # Email skill
+│   └── telegram.py       # Telegram skill
 ├── providers/
 │   ├── base.py           # Base API provider interface
-│   ├── nvidia_llm.py     # NVIDIA LLM provider (Kimi, GLM, Gemma, Qwen)
+│   ├── nvidia_llm.py     # NVIDIA LLM provider (GPT-OSS, Kimi, GLM)
 │   ├── nvidia_image.py   # NVIDIA image generation (SD 3.5, FLUX)
-│   ├── nvidia_tts.py     # NVIDIA text-to-speech (Magpie)
-│   ├── nvidia_stt.py     # NVIDIA speech-to-text (Whisper)
+│   ├── tts.py            # 🆕 Edge TTS provider (Microsoft Edge Neural)
+│   ├── nvidia_stt.py     # 🆕 Groq STT provider (Whisper v3)
 │   └── brave_search.py   # Brave Search API
 ├── tools/
 │   ├── browser.py        # Web browsing automation
@@ -69,7 +75,8 @@ MRAgent/
 │   └── code_runner.py    # Code execution sandbox
 ├── ui/
 │   ├── cli.py            # Command-line interface
-│   └── telegram_bot.py   # Telegram bot interface
+│   ├── telegram_bot.py   # Telegram bot interface
+│   └── web.py            # 🆕 Flask Web Interface (Chat & Voice)
 └── utils/
     ├── logger.py         # Logging utilities
     └── helpers.py        # Shared helper functions
@@ -121,23 +128,22 @@ MRAgent is built around **free-tier APIs** to keep costs at zero. Here are the c
 
 ### NVIDIA NIM (Primary)
 
-| Model                      | Purpose               | API        |
-| -------------------------- | --------------------- | ---------- |
-| Kimi K2.5                  | General-purpose LLM   | NVIDIA NIM |
-| GLM-5                      | Reasoning & code      | NVIDIA NIM |
-| Gemma 3N                   | Lightweight inference | NVIDIA NIM |
-| Qwen3 Coder                | Code generation       | NVIDIA NIM |
-| Stable Diffusion 3.5 Large | Image generation      | NVIDIA NIM |
-| FLUX Dev                   | Image generation      | NVIDIA NIM |
-| Magpie TTS                 | Text-to-speech        | NVIDIA NIM |
-| Whisper Large v3           | Speech-to-text        | NVIDIA NIM |
+| Model                      | Purpose             | API        |
+| -------------------------- | ------------------- | ---------- |
+| GPT-OSS-120B               | Reasoning (Primary) | NVIDIA NIM |
+| Kimi K2.5                  | General-purpose LLM | NVIDIA NIM |
+| GLM-5                      | Reasoning & code    | NVIDIA NIM |
+| Stable Diffusion 3.5 Large | Image generation    | NVIDIA NIM |
 
-### Other Providers
+### Other Free Providers
 
-| Provider         | Purpose             |
-| ---------------- | ------------------- |
-| Brave Search     | Web search API      |
-| Telegram Bot API | Messaging interface |
+| Provider         | Purpose             | Service                      |
+| ---------------- | ------------------- | ---------------------------- |
+| **Groq**         | Speech-to-Text      | Whisper Large v3 (Free)      |
+| **Edge TTS**     | Text-to-Speech      | Microsoft Edge Neural (Free) |
+| **AgentMail**    | Email               | AgentMail.to (Free)          |
+| **Brave Search** | Web search          | Brave Search API (Free)      |
+| **Telegram**     | Messaging Interface | Telegram Bot API (Free)      |
 
 > 💡 **Adding new providers?** Implement the base interface in `providers/base.py` and register your provider in the config.
 
@@ -146,17 +152,19 @@ MRAgent is built around **free-tier APIs** to keep costs at zero. Here are the c
 ## 🗺️ Roadmap
 
 - [x] Project setup & repository initialization
-- [ ] Core agent loop with task planning
-- [ ] NVIDIA LLM integration (multi-model)
-- [ ] Image generation pipeline
-- [ ] Text-to-speech & speech-to-text
+- [x] Core agent loop with task planning
+- [x] NVIDIA LLM integration (multi-model)
+- [x] Image generation pipeline
+- [x] Text-to-speech (Edge TTS)
+- [x] Speech-to-text (Groq Whisper)
+- [x] Telegram bot interface (Voice & Image support)
+- [x] Web Interface (Chat & Voice)
+- [x] Email Integration (AgentMail)
 - [ ] Brave Search integration
 - [ ] Terminal & code execution tools
 - [ ] File management system
 - [ ] Screen monitoring & analysis
 - [ ] Web browsing automation
-- [ ] Telegram bot interface
-- [ ] CLI interface with rich output
 - [ ] Plugin system for community extensions
 
 ---
