@@ -151,6 +151,27 @@ async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYP
         # 4. Reply with images support
         await send_response_with_images(update, context, response_text)
         
+        # 5. Voice Reply (TTS)
+        try:
+            from providers.tts import text_to_speech
+            
+            # Use temp file for TTS output
+            with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_tts:
+                tts_path = temp_tts.name
+            
+            await text_to_speech(response_text[:4000], tts_path) # Limit char count for TTS stability
+            
+            if os.path.exists(tts_path):
+                await context.bot.send_chat_action(chat_id=chat_id, action="upload_voice")
+                with open(tts_path, 'rb') as audio:
+                    await update.message.reply_voice(voice=audio)
+                
+                # Cleanup
+                os.remove(tts_path)
+                
+        except Exception as e:
+            logger.error(f"TTS reply failed: {e}")
+        
     except Exception as e:
         logger.error(f"Voice handling failed: {e}")
         await update.message.reply_text("❌ Sorry, I couldn't understand that audio.")

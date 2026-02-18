@@ -225,9 +225,35 @@ def create_app() -> Flask:
             _chat_store.save_message(_agent.chat_id, "user", transcript)
             _chat_store.save_message(_agent.chat_id, "assistant", response)
 
+            # Generate TTS
+            audio_base64 = None
+            try:
+                import tempfile
+                import base64
+                from providers.tts import text_to_speech
+                
+                with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+                    tts_path = tmp.name
+                
+                # We need to run async function in sync Flask route. 
+                # Since we are already in a thread (Flask threaded=True), we can use asyncio.run
+                # But that might conflict with existing loops.
+                # A safer way is to use the existing loop if available or create new one.
+                # However, Flask requests don't have a loop by default.
+                import asyncio
+                asyncio.run(text_to_speech(response[:1000], tts_path)) # Limit to 1000 chars for web speed
+                
+                if os.path.exists(tts_path):
+                    with open(tts_path, "rb") as audio_f:
+                        audio_base64 = base64.b64encode(audio_f.read()).decode('utf-8')
+                    os.remove(tts_path)
+            except Exception as e:
+                logger.error(f"Web TTS failed: {e}")
+
             return jsonify({
                 "transcript": transcript,
                 "response": response,
+                "audio": audio_base64,
                 "chat_id": _agent.chat_id
             })
 
@@ -1444,10 +1470,14 @@ async function sendVoiceMessage(audioBlob) {
            return;
         }
         
-        // Update user message
-        const userMsgs = document.querySelectorAll('.message.user .content');
         if (userMsgs.length > 0) {
             userMsgs[userMsgs.length - 1].innerText = `🎤 ${data.transcript}`;
+        }
+
+        // Play Audio if available
+        if (data.audio) {
+            const audio = new Audio("data:audio/mp3;base64," + data.audio);
+            audio.play().catch(e => console.error("Audio play failed:", e));
         }
 
         // Update assistant message

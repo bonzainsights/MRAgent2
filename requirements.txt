@@ -27,3 +27,6 @@ beautifulsoup4>=4.12.0     # HTML parsing for web browsing
 
 # ── Telegram (optional) ──
 python-telegram-bot>=20.0  # Telegram bot interface
+
+# ── TTS (Edge) ──
+edge-tts>=7.0.0            # Cloud-based Text-to-Speech (free, high quality)
