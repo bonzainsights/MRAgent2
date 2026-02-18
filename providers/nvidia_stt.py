@@ -20,27 +20,27 @@ logger = get_logger("providers.nvidia_stt")
 
 class NvidiaSTTProvider(STTProvider):
     """
-    NVIDIA NIM STT provider using OpenAI-compatible HTTP API.
-    Transcribes audio to text using 'nvidia/whisper-large-v3'.
+    Groq STT provider using OpenAI-compatible HTTP API.
+    Transcribes audio to text using 'whisper-large-v3'.
     """
 
     def __init__(self, rate_limit_rpm: int = 35):
-        super().__init__(name="nvidia_stt", rate_limit_rpm=rate_limit_rpm)
-        self.model = "nvidia/whisper-large-v3"
+        super().__init__(name="global_stt", rate_limit_rpm=rate_limit_rpm)
+        self.model = "whisper-large-v3"
         self._client = None
         self._init_client()
 
     def _init_client(self):
-        """Initialize OpenAI client for NVIDIA NIM."""
-        api_key = get_api_key("whisper_lv3")
+        """Initialize OpenAI client for Groq STT."""
+        api_key = get_api_key("whisper-lv3")
         if api_key:
             self._client = OpenAI(
-                base_url=NVIDIA_BASE_URL,
+                base_url="https://api.groq.com/openai/v1",
                 api_key=api_key,
             )
-            self.logger.info("NVIDIA STT (HTTP) client initialized")
+            self.logger.info("Groq STT client initialized")
         else:
-            self.logger.warning("NVIDIA_WHISPER_LV3 key not found. STT disabled.")
+            self.logger.warning("GROQ_API_KEY not found. STT disabled.")
 
     def speech_to_text(self, audio_bytes: bytes,
                        language: str = "en",

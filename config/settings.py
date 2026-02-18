@@ -50,11 +50,13 @@ NVIDIA_KEYS = {
     "qwen3_coder":   os.getenv("NVIDIA_QWEN3_CODER", ""),
     "llama_33_70b":  os.getenv("NVIDIA_LLAMA3_3_70B_INSTRUCT", ""),
     "gpt_oss_120b":  os.getenv("NVIDIA_GPT_OSS_120B", ""),
+    "groq_api_key":  os.getenv("GROQ_API_KEY", ""),
 }
 
 # Other provider keys
 BRAVE_SEARCH_API_KEY = os.getenv("BRAVE_SEARCH_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
 
 # ──────────────────────────────────────────────
@@ -162,10 +164,10 @@ MODEL_REGISTRY = {
         "description": "Natural multilingual text-to-speech",
     },
     "whisper-lv3": {
-        "id": "nvidia/whisper-large-v3",
-        "key": "whisper_lv3",
+        "id": "whisper-large-v3",
+        "key": "groq_api_key",
         "type": "stt",
-        "description": "Accurate speech-to-text transcription",
+        "description": "Groq: Super-fast Whisper v3 transcription",
     },
 }
 

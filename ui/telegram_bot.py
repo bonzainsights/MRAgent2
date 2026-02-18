@@ -143,7 +143,6 @@ async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYP
         loop = asyncio.get_running_loop()
         transcript = await loop.run_in_executor(None, stt.speech_to_text, audio_bytes)
         
-        await update.message.reply_text(f"🎤 You said: \"{transcript}\"")
         await context.bot.send_chat_action(chat_id=chat_id, action="typing")
 
         # 3. Send to Agent
