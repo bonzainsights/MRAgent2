@@ -105,7 +105,8 @@ class ModelSelector:
     def _classify(self, message: str) -> str:
         """Classify a message and return the best model name."""
         msg_lower = message.lower()
-        scores = {"code": 0, "thinking": 0, "fast": 0}
+        # Initialize scores for all defined categories
+        scores = {k: 0 for k in PATTERNS.keys()}
 
         for category, patterns in PATTERNS.items():
             for pattern in patterns:
@@ -142,8 +143,8 @@ class ModelSelector:
 
     def set_mode(self, mode: str):
         """Change the selection mode."""
-        if mode not in ("auto", "thinking", "fast", "code"):
-            raise ValueError(f"Invalid mode: {mode}. Use: auto, thinking, fast, code")
+        if mode not in ("auto", "thinking", "fast", "code", "browsing"):
+            raise ValueError(f"Invalid mode: {mode}. Use: auto, thinking, fast, code, browsing")
         self.mode = mode
         self.logger.info(f"Model selection mode changed to: {mode}")
 

@@ -214,7 +214,7 @@ class CLIInterface:
                 self._print_info("\nUsage: model <name>  (e.g. model glm5)")
 
         elif command == "/mode":
-            if arg in ("auto", "thinking", "fast", "code"):
+            if arg in ("auto", "thinking", "fast", "code", "browsing"):
                 self.agent.set_model_mode(arg)
                 self.agent.model_override = None  # Clear manual override
                 self._last_model = self._mode_to_model(arg)
@@ -224,7 +224,9 @@ class CLIInterface:
                 current = self.agent.model_selector.mode
                 self._print_info(f"Current mode: {current}")
                 self._print_info("")
-                for m in ("thinking", "fast", "code"):
+                self._print_info(f"Current mode: {current}")
+                self._print_info("")
+                for m in ("thinking", "fast", "code", "browsing"):
                     default = ModelSelector.get_default_for_mode(m)
                     options = ModelSelector.get_models_for_mode(m)
                     others = [o for o in options if o != default]
