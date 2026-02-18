@@ -29,6 +29,7 @@ COMMANDS = {
     "/stats":    "Show agent statistics",
     "/clear":    "Clear the screen",
     "/skills":   "Configure API skills (Telegram, AgentMail...)",
+    "/email":    "Send an email interactively",
     "/exit":     "Exit MRAgent",
 }
 

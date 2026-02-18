@@ -34,7 +34,7 @@ class AgentMailTool(Tool):
 
     def _request(self, method: str, endpoint: str, data: dict = None) -> dict:
         api_key = self._get_api_key()
-        url = f"https://api.agentmail.to/v1{endpoint}"
+        url = f"https://api.agentmail.to/v0{endpoint}"
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
@@ -54,6 +54,25 @@ class AgentMailTool(Tool):
         except Exception as e:
             return {"error": str(e)}
 
+    def _get_inbox_id(self) -> str:
+        """Fetch the default inbox ID (email address)."""
+        # 1. Check if we already have it cached
+        if hasattr(self, "_cached_inbox_id"):
+            return self._cached_inbox_id
+
+        # 2. Fetch from API
+        result = self._request("GET", "/inboxes")
+        if "error" in result:
+            raise ValueError(f"Could not fetch inbox ID: {result['error']}")
+            
+        inboxes = result.get("inboxes", [])
+        if not inboxes:
+            raise ValueError("No inboxes found for this API key.")
+            
+        # 3. Use the first inbox's email address as the ID
+        self._cached_inbox_id = inboxes[0]["inbox_id"]
+        return self._cached_inbox_id
+
 
 class CheckInboxTool(AgentMailTool):
     name = "check_email"
@@ -70,33 +89,28 @@ class CheckInboxTool(AgentMailTool):
     }
 
     def execute(self, limit: int = 5) -> str:
-        # Note: AgentMail API endpoint for listing messages
-        # Adjusting endpoint based on common patterns, verifying with actual docs would be ideal
-        # Assuming /messages or /inbox based on typical REST APIs
-        # If specific endpoint is known from docs (researched earlier via search_web), use that.
-        # The search result mentioned "endpoints to process leads or manage email communications".
-        # Let's assume a standard list endpoint for now.
-        
-        # NOTE: Since we didn't get precise endpoint docs for "list messages", 
-        # distinct from "threads", we'll try /messages. 
-        # If this fails, the user will see an error and can correct.
-        
-        result = self._request("GET", "/messages", {"limit": limit})
+        try:
+            inbox_id = self._get_inbox_id()
+        except Exception as e:
+            return f"❌ Error: {str(e)}"
+
+        # Endpoint: GET /v0/inboxes/{inbox_id}/messages
+        result = self._request("GET", f"/inboxes/{inbox_id}/messages", {"limit": limit})
         
         if "error" in result:
             return f"❌ Error checking inbox: {result['error']}"
             
-        data = result.get("data", [])
-        if not data:
+        msgs = result.get("messages", [])
+        if not msgs:
             return "📭 Inbox is empty."
             
-        output = ["📬 **Recent Emails:**"]
-        for msg in data:
+        output = [f"📬 **Inbox ({inbox_id}):**"]
+        for msg in msgs:
             sender = msg.get("from_address", "Unknown")
             subject = msg.get("subject", "No Subject")
             snippet = msg.get("snippet", "")
-            msg_id = msg.get("id", "")
-            output.append(f"- **[{msg_id}]** From: {sender} | Subj: {subject}\n  _{snippet}_")
+            msg_id = msg.get("message_id", "")
+            output.append(f"- **From:** {sender} | **Subj:** {subject}\n  _{snippet}_")
             
         return "\n".join(output)
 
@@ -124,13 +138,19 @@ class SendEmailTool(AgentMailTool):
     }
 
     def execute(self, to: str, subject: str, body: str) -> str:
+        try:
+            inbox_id = self._get_inbox_id()
+        except Exception as e:
+            return f"❌ Error: {str(e)}"
+
         payload = {
-            "to_address": to,
+            "to": [to], # API expects a list of strings
             "subject": subject,
-            "body": body,
+            "text": body,  # API uses 'text' or 'html'
         }
         
-        result = self._request("POST", "/messages", payload)
+        # Endpoint: POST /v0/inboxes/{inbox_id}/messages/send
+        result = self._request("POST", f"/inboxes/{inbox_id}/messages/send", payload)
         
         if "error" in result:
             return f"❌ Failed to send email: {result['error']}"

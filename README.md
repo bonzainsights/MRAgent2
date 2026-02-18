@@ -24,20 +24,20 @@
 
 ## 🚀 Features
 
-| Capability               | Description                                              | Status         |
-| ------------------------ | -------------------------------------------------------- | -------------- |
-| 💬 **LLM Chat**          | Multi-model text generation (GPT-OSS, Kimi, GLM-5)       | ✅ Implemented |
-| 🎨 **Image Generation**  | Text-to-image via Stable Diffusion 3.5 Large & FLUX Dev  | ✅ Implemented |
-| 🗣️ **Text-to-Speech**    | Natural voice synthesis via **Edge TTS** (Free, Neutral) | ✅ Implemented |
-| 👂 **Speech-to-Text**    | Audio transcription via **Groq Whisper v3** (Ultra-fast) | ✅ Implemented |
-| 📧 **Email Skill**       | Send & receive emails via AgentMail                      | ✅ Implemented |
-| 📱 **Telegram Bot**      | Chat, Voice, & Image interaction                         | ✅ Implemented |
-| 🖥️ **Screen Monitoring** | Capture and analyze screen content in real-time          | 📋 Planned     |
-| 🌐 **Web Browsing**      | Autonomous internet surfing and information gathering    | 📋 Planned     |
-| 💻 **Code Execution**    | Write, run, and debug code in multiple languages         | 📋 Planned     |
-| 🔧 **Terminal Access**   | Execute shell commands and system operations             | 📋 Planned     |
-| 📁 **File Management**   | Navigate, create, move, and organize files               | 📋 Planned     |
-| 🔍 **Web Search**        | Search the internet via Brave Search API                 | 🟡 In Progress |
+| Capability               | Description                                                        | Status         |
+| ------------------------ | ------------------------------------------------------------------ | -------------- |
+| 💬 **LLM Chat**          | Multi-model text generation (GPT-OSS, Kimi, GLM-5)                 | ✅ Implemented |
+| 🎨 **Image Generation**  | Text-to-image via Stable Diffusion 3.5 Large & FLUX Dev            | ✅ Implemented |
+| 🗣️ **Text-to-Speech**    | Natural voice synthesis via **Edge TTS** (Free, Neutral)           | ✅ Implemented |
+| 👂 **Speech-to-Text**    | Audio transcription via **Groq Whisper v3** (Ultra-fast)           | ✅ Implemented |
+| 📧 **Email Skill**       | Send & receive emails via AgentMail (Interactive `/email` command) | ✅ Implemented |
+| 📱 **Telegram Bot**      | Chat, Voice, & Image interaction                                   | ✅ Implemented |
+| 🖥️ **Screen Monitoring** | Capture and analyze screen content in real-time                    | 📋 Planned     |
+| 🌐 **Web Browsing**      | Autonomous internet surfing and information gathering              | 📋 Planned     |
+| 💻 **Code Execution**    | Write, run, and debug code in multiple languages                   | 📋 Planned     |
+| 🔧 **Terminal Access**   | Execute shell commands and system operations                       | 📋 Planned     |
+| 📁 **File Management**   | Navigate, create, move, and organize files                         | 📋 Planned     |
+| 🔍 **Web Search**        | Search the internet via Brave Search API                           | 🟡 In Progress |
 
 ---
 
