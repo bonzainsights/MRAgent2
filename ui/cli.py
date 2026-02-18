@@ -194,8 +194,10 @@ class CLIInterface:
             self._print_info("🔄 New conversation started")
 
         elif command == "/model":
+            from config.settings import MODEL_REGISTRY
+
             if arg:
-                from config.settings import MODEL_REGISTRY
+                # Direct set
                 if arg in MODEL_REGISTRY:
                     self.agent.set_model(arg)
                     self._last_model = arg
@@ -204,14 +206,82 @@ class CLIInterface:
                     self._print_info(f"❌ Unknown model: {arg}")
                     self._print_info(f"Available: {', '.join(k for k,v in MODEL_REGISTRY.items() if v.get('type')=='llm')}")
             else:
-                from config.settings import MODEL_REGISTRY
-                self._print_info("Available LLM models:")
-                for name, info in MODEL_REGISTRY.items():
-                    if info.get("type") == "llm":
-                        cats = ", ".join(info.get("categories", []))
-                        desc = info.get("description", "")
-                        self._print_info(f"  {name:20s} [{cats:20s}] {desc}")
-                self._print_info("\nUsage: model <name>  (e.g. model glm5)")
+                # Interactive set (Inline)
+                try:
+                    from prompt_toolkit.application import Application
+                    from prompt_toolkit.key_binding import KeyBindings
+                    from prompt_toolkit.layout.containers import Window
+                    from prompt_toolkit.layout.controls import FormattedTextControl
+                    from prompt_toolkit.layout.layout import Layout
+                    from prompt_toolkit.formatted_text import HTML, merge_formatted_text
+
+                    # Build choices
+                    choices = []
+                    for model_id, info in MODEL_REGISTRY.items():
+                        if info.get("type") == "llm":
+                            cats = ", ".join(info.get("categories", []))
+                            label = f"{model_id:<20} [dim]({cats})[/dim]"
+                            choices.append({"id": model_id, "label": label})
+                    
+                    if not choices:
+                        self._print_info("No LLM models found.")
+                        return True
+
+                    # Selection State
+                    state = {"index": 0, "selected": None}
+
+                    # 1. Key Bindings
+                    kb = KeyBindings()
+
+                    @kb.add("up")
+                    def _(event):
+                        state["index"] = (state["index"] - 1) % len(choices)
+
+                    @kb.add("down")
+                    def _(event):
+                        state["index"] = (state["index"] + 1) % len(choices)
+
+                    @kb.add("enter")
+                    def _(event):
+                        state["selected"] = choices[state["index"]]["id"]
+                        event.app.exit(result=state["selected"])
+
+                    @kb.add("c-c")
+                    def _(event):
+                        event.app.exit(result=None)
+
+                    # 2. Layout (Render function)
+                    def get_formatted_text():
+                        lines = []
+                        lines.append(HTML("<b>Select a model (Type /help for more info):</b>"))
+                        for i, choice in enumerate(choices):
+                            if i == state["index"]:
+                                lines.append(HTML(f"\n <style fg='cyan'>❯ {choice['label']}</style>"))
+                            else:
+                                lines.append(HTML(f"\n   {choice['label']}"))
+                        return merge_formatted_text(lines)
+
+                    # 3. Application
+                    app = Application(
+                        layout=Layout(Window(content=FormattedTextControl(get_formatted_text), height=len(choices)+2)),
+                        key_bindings=kb,
+                        mouse_support=False,
+                        full_screen=False,
+                    )
+
+                    selected_model = app.run()
+                    
+                    if selected_model:
+                        self.agent.set_model(selected_model)
+                        self._last_model = selected_model
+                        self._print_info(f"✅ Model set to: {selected_model}")
+                    else:
+                        self._print_info("Cancelled.")
+
+                except ImportError:
+                    self._print_info("Interactive selection requires prompt_toolkit.")
+                except Exception as e:
+                    self._print_info(f"Selection failed: {e}")
 
         elif command == "/mode":
             if arg in ("auto", "thinking", "fast", "code", "browsing"):
