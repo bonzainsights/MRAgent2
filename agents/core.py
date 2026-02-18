@@ -13,6 +13,7 @@ from typing import Callable, Generator
 from agents.context_manager import ContextManager
 from agents.model_selector import ModelSelector
 from agents.prompt_enhancer import PromptEnhancer
+from config.settings import MODEL_REGISTRY
 from providers import get_llm
 from tools import create_tool_registry
 from tools.base import ToolRegistry
@@ -119,10 +120,17 @@ class AgentCore:
         Returns the final text response after all tool calls are resolved.
         """
         llm = get_llm()
-        tools_schema = self.tool_registry.get_openai_tools()
-
+        
+        # Check if model supports tools
+        model_info = MODEL_REGISTRY.get(model, {})
+        supports_tools = model_info.get("supports_tools", False)
+        
+        tools_schema = self.tool_registry.get_openai_tools() if supports_tools else None
+        
+        # Max tools limit
         for iteration in range(MAX_TOOL_ITERATIONS):
-            messages = self.context_manager.messages
+            # Get messages, filtering out tools if model doesn't support them
+            messages = self.context_manager.get_messages(include_tools=supports_tools)
 
             logger.debug(f"Agent loop iteration {iteration + 1}, messages: {len(messages)}")
 

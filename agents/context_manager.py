@@ -61,14 +61,51 @@ class ContextManager:
 
     @property
     def messages(self) -> list[dict]:
-        """Get current active messages (with summary prepended if exists)."""
+        """Get current active messages (default: include tools)."""
+        return self.get_messages(include_tools=True)
+
+    def get_messages(self, include_tools: bool = True) -> list[dict]:
+        """
+        Get active messages, optionally filtering out tool interactions.
+        
+        Args:
+            include_tools: If False, strips 'tool' messages and 'tool_calls' 
+                          from assistant messages.
+        """
         result = []
         if self._summary:
             result.append({
                 "role": "system",
                 "content": f"[Previous conversation summary]\n{self._summary}",
             })
-        result.extend(self._messages)
+            
+        raw_messages = self._messages
+        
+        if include_tools:
+            result.extend(raw_messages)
+            return result
+            
+        # Filter tools if not supported
+        for msg in raw_messages:
+            role = msg.get("role")
+            
+            # Skip tool outputs
+            if role == "tool":
+                continue
+                
+            # Copy message to avoid mutating original
+            new_msg = msg.copy()
+            
+            # Strip tool calls from assistant messages
+            if role == "assistant" and "tool_calls" in new_msg:
+                del new_msg["tool_calls"]
+                # If message becomes empty (content None/empty), skip it entirely
+                # to avoid "Assistant -> Assistant" patterns or empty messages.
+                if not new_msg.get("content"):
+                    continue
+            
+            result.append(new_msg)
+            
         return result
 
     @property
