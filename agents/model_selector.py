@@ -43,7 +43,7 @@ PATTERNS = {
         r"\b(step[- ]?by[- ]?step|break down|decompose)\b",
         # Creative / tool-requiring tasks → need tool-capable model
         r"\b(image|picture|photo|draw|paint|illustrat|generat|creat)\b",
-        r"\b(search|find|look up|fetch|download|browse|web)\b",
+        r"\b(search|find|look up|fetch|download|browse|web|news|headline|topic|trend)\b",
         r"\b(file|folder|directory|read|write|save|delete|move|rename)\b",
         r"\b(run|execute|terminal|command|shell|screenshot)\b",
     ],

@@ -100,20 +100,33 @@ class LangSearchProvider(SearchProvider):
         Returns:
             Markdown-formatted search results string
         """
-        results = self.search(query, count)
+        try:
+            results = self.search(query, count)
+        except Exception as e:
+            self.logger.error(f"Search failed: {e}")
+            return f"❌ Search failed: {e}"
+
         if not results:
+            self.logger.info(f"No results found for '{query}'")
             return f"No results found for: {query}"
 
         lines = [f"## LangSearch Results for: {query}\n"]
         for i, r in enumerate(results, 1):
-            lines.append(f"**{i}. [{r['title']}]({r['url']})**")
-            if r["description"]:
-                lines.append(f"   {r['description']}")
-            if r["age"]:
-                lines.append(f"   *{r['age']}*")
-            lines.append("")
+            title = r.get("title", "No Title")
+            url = r.get("url", "#")
+            desc = r.get("description", "")
+            age = r.get("age")
 
-        return "\n".join(lines)
+            lines.append(f"**{i}. [{title}]({url})**")
+            if desc:
+                lines.append(f"   {desc}")
+            if age:
+                lines.append(f"   *{age}*")
+            lines.append("")
+        
+        formatted = "\n".join(lines)
+        self.logger.debug(f"Formatted output ({len(formatted)} chars):\n{formatted[:200]}...")
+        return formatted
 
     @property
     def available(self) -> bool:
