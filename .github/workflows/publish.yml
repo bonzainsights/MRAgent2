@@ -11,11 +11,8 @@ jobs:
   pypi-publish:
     name: Upload release to PyPI
     runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/mragent
     permissions:
-      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
+      # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
       - uses: actions/checkout@v4
 
