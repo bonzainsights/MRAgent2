@@ -289,7 +289,8 @@ def main():
     DEFAULTS["web_port"] = args.port
 
     print_startup_info(args)
-
+    
+    # Test Poneglyph LLM Diagnostics
     # Launch selected interface
     try:
         if args.mode == "both":
@@ -308,8 +309,8 @@ def main():
         sys.exit(0)
     except Exception as e:
         logger.critical(f"Fatal error: {e}", exc_info=True)
-        print(f"\n❌ Fatal error: {e}")
-        print("   Check data/logs/mragent.log for details.")
+        # Use Poneglyph to analyze and suggest fixes
+        poneglyph.analyze_error(e, context="main execution loop")
         sys.exit(1)
 
 

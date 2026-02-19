@@ -176,20 +176,38 @@ class Poneglyph:
 
     def _consult_llm(self, e: Exception, traceback_str: str, context: str):
         """
-        Send error details to LLM for analysis (Stub for now).
-        TODO: detailed prompt construction
+        Send error details to LLM for analysis.
         """
-        # Check if LLM is actually available (avoid infinite loop of errors)
+        print(f"\n🧠 [Poneglyph] Consulting the Ancient Texts (LLM)...")
+        
         try:
-             # In a real implementation, this would import the AgentCore or LLM provider
-             # For now, we print a placeholder message simulating LLM insight
-             print(f"\n🧠 [Poneglyph Analysis]")
-             print(f"The Ancient Texts suggest this error in '{context}' might be due to:")
-             print(f"> {str(e)}")
-             print(f"> Recommendation: Check your configuration or recent code changes.")
-             print(f"> Use 'python main.py doctor --fix' if this persists.\n")
+            from providers.nvidia_llm import NvidiaLLMProvider
+            
+            # Use a lightweight reasoning model if available, or default
+            llm = NvidiaLLMProvider()
+            
+            previous_context = "" 
+            # TODO: Add recent log context if available
+            
+            messages = [
+                {"role": "system", "content": (
+                    "You are the Poneglyph Guardian, a system doctor for an AI Agent. "
+                    "Analyze the following Python exception and traceback. "
+                    "Provide a concise diagnosis and concrete fix instructions. "
+                    "Be Technical but clear. Focus on 'Why it broke' and 'How to fix it'."
+                )},
+                {"role": "user", "content": f"Context: {context}\n\nError: {str(e)}\n\nTraceback:\n{traceback_str}"}
+            ]
+            
+            response = llm.chat(messages, model="kimi-k2.5", stream=False)
+            analysis = response["content"]
+            
+            print(f"\n📜 [Poneglyph Analysis]")
+            print(f"{analysis}\n")
+            
         except Exception as llm_error:
              logger.error(f"Failed to consult LLM: {llm_error}")
+             print(f"⚠️  [Poneglyph] LLM consultation failed. Fallback error info:\n{e}")
 
     def run_fixer(self):
         """Attempt to auto-fix identified issues."""
