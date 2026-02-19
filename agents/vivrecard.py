@@ -32,6 +32,7 @@ class VivreCard(threading.Thread):
         self.running = False
         self.jobs = []
         self._lock = threading.Lock()
+        self.last_echo = {}  # Track last time a job was printed to stdout
         
         # Ensure jobs file exists
         if not JOBS_FILE.exists():
@@ -42,7 +43,7 @@ class VivreCard(threading.Thread):
         defaults = [
             {
                 "id": "heartbeat",
-                "schedule": "* * * * *",  # Every minute
+                "schedule": "*/3 * * * *",  # Every 3 minutes
                 "type": "log",
                 "payload": "💓 VivreCard heartbeat: I am alive and checking in!",
                 "enabled": True
@@ -88,8 +89,13 @@ class VivreCard(threading.Thread):
         try:
             if job_type == "log":
                 logger.info(f"[VivreCard] {payload}")
-                # Also print to stdout for visibility in CLI
-                print(f"\n[VivreCard] {payload}\n")
+                
+                # Only print to stdout every 2 hours (7200 seconds) to reduce noise
+                # But always print if it's the first time
+                last_time = self.last_echo.get(job_id, 0)
+                if time.time() - last_time >= 7200:
+                    print(f"\n[VivreCard] {payload}\n")
+                    self.last_echo[job_id] = time.time()
 
             elif job_type == "shell":
                 import subprocess

@@ -27,6 +27,7 @@ from config.settings import (
     DEFAULTS, validate_config, save_config_backup, SYSTEM_INFO
 )
 from agents.vivrecard import VivreCard
+from core.poneglyph import Poneglyph
 
 logger = get_logger("main")
 
@@ -249,6 +250,23 @@ def run_both(args: argparse.Namespace):
 
 def main():
     """Main entry point."""
+    
+    # Initialize Poneglyph (The Guardian)
+    poneglyph = Poneglyph()
+
+    # Handle 'doctor' command early
+    if len(sys.argv) > 1 and sys.argv[1] == "doctor":
+        if "--fix" in sys.argv:
+            poneglyph.run_fixer()
+        else:
+            poneglyph.check_health()
+            poneglyph.report()
+        return
+
+    # Poneglyph Guardian Check before startup
+    if not poneglyph.check_health():
+         logger.warning("System health check reported issues. Run 'python main.py doctor' for details.")
+
     args = parse_args()
 
     # Set debug logging if requested — shows all logs in terminal too
