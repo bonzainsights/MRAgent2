@@ -7,7 +7,7 @@ setup(
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     author="Bonza Insights",
-    author_email="hello@bonzainsights.com",
+    author_email="hello@achbj.com",
     url="https://github.com/bonzainsights/MRAgent",
     packages=find_packages(),
     py_modules=["main"],
