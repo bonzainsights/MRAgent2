@@ -26,18 +26,20 @@
 
 | Capability               | Description                                                        | Status         |
 | ------------------------ | ------------------------------------------------------------------ | -------------- |
-| 💬 **LLM Chat**          | Multi-model text generation (GPT-OSS, Kimi, GLM-5)                 | ✅ Implemented |
+| 💬 **LLM Chat**          | Multi-model text generation (GPT-OSS, Kimi, GLM-5, Llama 3.3)      | ✅ Implemented |
 | 🎨 **Image Generation**  | Text-to-image via Stable Diffusion 3.5 Large & FLUX Dev            | ✅ Implemented |
 | 🗣️ **Text-to-Speech**    | Natural voice synthesis via **Edge TTS** (Free, Neutral)           | ✅ Implemented |
 | 👂 **Speech-to-Text**    | Audio transcription via **Groq Whisper v3** (Ultra-fast)           | ✅ Implemented |
 | 📧 **Email Skill**       | Send & receive emails via AgentMail (Interactive `/email` command) | ✅ Implemented |
 | 📱 **Telegram Bot**      | Chat, Voice, & Image interaction                                   | ✅ Implemented |
-| 🖥️ **Screen Monitoring** | Capture and analyze screen content in real-time                    | 📋 Planned     |
-| 🌐 **Web Browsing**      | Autonomous internet surfing and information gathering              | 📋 Planned     |
-| 💻 **Code Execution**    | Write, run, and debug code in multiple languages                   | 📋 Planned     |
-| 🔧 **Terminal Access**   | Execute shell commands and system operations                       | 📋 Planned     |
-| 📁 **File Management**   | Navigate, create, move, and organize files                         | 📋 Planned     |
-| 🔍 **Web Search**        | Search the internet via Brave Search API                           | 🟡 In Progress |
+| 💓 **VivreCard**         | Background Scheduler & Heartbeat System                            | ✅ Implemented |
+| 🛡️ **Poneglyph**         | System Guardian & Doctor (Auto-diagnostics)                        | ✅ Implemented |
+| 🌐 **Web Browsing**      | Autonomous internet surfing and information gathering              | ✅ Implemented |
+| 🖥️ **Screen Monitoring** | Capture and analyze screen content in real-time                    | ✅ Implemented |
+| 💻 **Code Execution**    | Write, run, and debug code in multiple languages                   | ✅ Implemented |
+| 🔧 **Terminal Access**   | Execute shell commands and system operations                       | ✅ Implemented |
+| 📁 **File Management**   | Navigate, create, move, and organize files                         | ✅ Implemented |
+| 🔍 **Web Search**        | Search the internet via Brave Search API                           | ✅ Implemented |
 
 ---
 
@@ -52,11 +54,17 @@ MRAgent/
 ├── main.py               # Entry point
 ├── config/
 │   └── settings.py       # Configuration & API key management
+├── data/
+│   ├── mragent.json      # 🆕 Poneglyph Configuration
+│   └── vivrecard_jobs.json # Scheduled jobs
+├── core/
+│   └── poneglyph.py      # 🆕 System Guardian & Doctor
 ├── agents/
 │   ├── core.py           # Core agent orchestration loop
+│   ├── vivrecard.py      # 🆕 Scheduler system
 │   ├── planner.py        # Task planning & decomposition
 │   └── executor.py       # Action execution engine
-├── skills/               # 🆕 Modular Skills System
+├── skills/               # Modular Skills System
 │   ├── base.py           # Base skill interface
 │   ├── agentmail.py      # Email skill
 │   └── telegram.py       # Telegram skill
@@ -64,19 +72,17 @@ MRAgent/
 │   ├── base.py           # Base API provider interface
 │   ├── nvidia_llm.py     # NVIDIA LLM provider (GPT-OSS, Kimi, GLM)
 │   ├── nvidia_image.py   # NVIDIA image generation (SD 3.5, FLUX)
-│   ├── tts.py            # 🆕 Edge TTS provider (Microsoft Edge Neural)
-│   ├── nvidia_stt.py     # 🆕 Groq STT provider (Whisper v3)
+│   ├── tts.py            # Edge TTS provider
+│   ├── nvidia_stt.py     # Groq STT provider
 │   └── brave_search.py   # Brave Search API
 ├── tools/
 │   ├── browser.py        # Web browsing automation
 │   ├── terminal.py       # Shell command execution
-│   ├── file_manager.py   # File system operations
-│   ├── screen.py         # Screen capture & analysis
-│   └── code_runner.py    # Code execution sandbox
+│   └── ...
 ├── ui/
 │   ├── cli.py            # Command-line interface
 │   ├── telegram_bot.py   # Telegram bot interface
-│   └── web.py            # 🆕 Flask Web Interface (Chat & Voice)
+│   └── web.py            # Flask Web Interface
 └── utils/
     ├── logger.py         # Logging utilities
     └── helpers.py        # Shared helper functions
@@ -113,11 +119,14 @@ cp .env.example .env
 ### Quick Start
 
 ```bash
-# Run the agent (CLI mode)
+# Run the agent (CLI mode + Web UI)
 python main.py
 
 # Run as Telegram bot
 python main.py --mode telegram
+
+# Run System Diagnostic
+python main.py doctor
 ```
 
 ---
@@ -133,7 +142,10 @@ MRAgent is built around **free-tier APIs** to keep costs at zero. Here are the c
 | GPT-OSS-120B               | Reasoning (Primary) | NVIDIA NIM |
 | Kimi K2.5                  | General-purpose LLM | NVIDIA NIM |
 | GLM-5                      | Reasoning & code    | NVIDIA NIM |
+| Llama 3.3 70B              | Reliable fallback   | NVIDIA NIM |
+| Qwen2.5 Coder              | Code generation     | NVIDIA NIM |
 | Stable Diffusion 3.5 Large | Image generation    | NVIDIA NIM |
+| FLUX.1 Dev                 | Image generation    | NVIDIA NIM |
 
 ### Other Free Providers
 
@@ -160,12 +172,13 @@ MRAgent is built around **free-tier APIs** to keep costs at zero. Here are the c
 - [x] Telegram bot interface (Voice & Image support)
 - [x] Web Interface (Chat & Voice)
 - [x] Email Integration (AgentMail)
-- [ ] Brave Search integration
-- [ ] Terminal & code execution tools
-- [ ] File management system
-- [ ] Screen monitoring & analysis
-- [ ] Web browsing automation
-- [ ] Plugin system for community extensions
+- [x] VivreCard Scheduler
+- [x] Poneglyph System (Guardian & Doctor)
+- [x] Brave Search integration
+- [x] Terminal & code execution tools
+- [x] File management system
+- [x] Screen monitoring & analysis
+- [x] Web browsing automation
 
 ---
 
@@ -194,5 +207,5 @@ MRAgent uses free-tier API keys which may have rate limits and usage quotas. The
 ---
 
 <p align="center">
-  Built with ❤️ by <a href="https://github.com/bonzainsights">Bonza Insights</a>
+  Built with ❤️ by <a href="https://github.com/bonzainsights">Bonza Insights</a> & <a href="https://github.com/achbj">achbj</a>
 </p>
