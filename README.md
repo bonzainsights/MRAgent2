@@ -1,8 +1,8 @@
 <p align="center">
   <h1 align="center">🤖 MRAgent</h1>
   <p align="center">
-    <a href="https://pypi.org/project/mragent/">
-      <img src="https://img.shields.io/pypi/v/mragent.svg?style=flat-square" alt="PyPI version" />
+    <a href="https://pypi.org/project/bonza-mragent/">
+      <img src="https://img.shields.io/pypi/v/bonza-mragent.svg?style=flat-square" alt="PyPI version" />
     </a>
     <a href="https://github.com/bonzainsights/MrAgent/releases">
       <img src="https://img.shields.io/github/v/release/bonzainsights/MrAgent?style=flat-square" alt="GitHub release" />
@@ -127,7 +127,7 @@ iwr https://raw.githubusercontent.com/bonzainsights/MrAgent/main/install.bat | i
 If you have Python 3.10+ installed:
 
 ```bash
-pip install git+https://github.com/bonzainsights/MRAgent.git
+pip install bonza-mragent
 mragent
 ```
 
