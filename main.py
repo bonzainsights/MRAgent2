@@ -75,9 +75,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--mode", "-m",
-        choices=["cli", "web", "both", "telegram"],
+        choices=["cli", "web", "both", "telegram", "watch"],
         default="both",
-        help="Interface mode: both (cli+web, default), cli, web, telegram",
+        help="Interface mode: both (cli+web, default), cli, web, telegram, watch",
     )
     parser.add_argument(
         "--voice", "-v",
@@ -248,6 +248,20 @@ def run_both(args: argparse.Namespace):
     run_cli(args)
 
 
+def run_watch(args: argparse.Namespace):
+    """Launch Eagle Eye Watcher mode."""
+    logger.info("Starting Eagle Eye Watcher...")
+    try:
+        from agents.watcher import EagleEyeWatcher
+        # Default to 2s interval, 5% threshold
+        watcher = EagleEyeWatcher(interval=2.0, diff_threshold=5.0)
+        watcher.start()
+    except ImportError as e:
+        logger.error(f"Watcher dependencies missing: {e}")
+        logger.info("Ensure pillow, edge-tts, and pygame/afplay are available.")
+        sys.exit(1)
+
+
 def main():
     """Main entry point."""
     
@@ -300,6 +314,7 @@ def main():
                 "cli": run_cli,
                 "web": run_web,
                 "telegram": run_telegram,
+                "watch": run_watch,
             }
             runner = mode_runners[args.mode]
             runner(args)

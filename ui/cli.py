@@ -30,6 +30,7 @@ COMMANDS = {
     "/clear":    "Clear the screen",
     "/skills":   "Configure API skills (Telegram, AgentMail...)",
     "/email":    "Send an email interactively",
+    "/watch":    "Start Eagle Eye Watcher mode",
     "/exit":     "Exit MRAgent",
 }
 
@@ -351,6 +352,16 @@ class CLIInterface:
 
         elif command == "/skills":
             self._configure_skills()
+
+        elif command == "/watch":
+            self._print_info("🦅 Starting Eagle Eye Watcher... (Press Ctrl+C to stop)")
+            try:
+                from agents.watcher import EagleEyeWatcher
+                EagleEyeWatcher(interval=2.0, diff_threshold=5.0).start()
+            except ImportError:
+                self._print_info("❌ Watcher dependencies missing.")
+            except Exception as e:
+                self._print_info(f"❌ Watcher error: {e}")
 
         else:
             self._print_info(f"Unknown command: {command}. Type /help for commands.")
