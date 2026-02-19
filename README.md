@@ -99,18 +99,35 @@ MRAgent/
 
 ### Installation
 
-#### **Mac/Linux**
+### Installation
+
+#### **One-Line Installer (Recommended)**
+
+**Mac/Linux:**
 
 ```bash
-./install.sh
+curl -fsSL https://raw.githubusercontent.com/bonzainsights/MrAgent/main/install.sh | bash
+```
+
+**Windows (PowerShell):**
+
+```powershell
+iwr https://raw.githubusercontent.com/bonzainsights/MrAgent/main/install.bat | iex
+```
+
+#### **Pip (Python Package)**
+
+If you have Python 3.10+ installed:
+
+```bash
+pip install git+https://github.com/bonzainsights/MRAgent.git
 mragent
 ```
 
-#### **Windows**
+#### **Homebrew (macOS)**
 
-```powershell
-.\install.bat
-mragent
+```bash
+brew install --HEAD https://raw.githubusercontent.com/bonzainsights/MRAgent/main/Formula/mragent.rb
 ```
 
 #### **Manual Setup (Advanced)**
