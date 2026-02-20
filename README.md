@@ -226,6 +226,7 @@ MRAgent is built around **free-tier APIs** to keep costs at zero. Here are the c
 - [x] Security: Terminal/Code Execution Approvals (HitL)
 - [x] Security: Web UI & Telegram Authentication
 - [x] Interactive Startup Wizards (API Keys & Identity)
+- [x] NVIDIA API Key Consolidation (Global Defaulting)
 
 ---
 

@@ -39,18 +39,21 @@ for d in [DATA_DIR, LOGS_DIR, IMAGES_DIR, CONFIG_BACKUP_DIR]:
 # ──────────────────────────────────────────────
 NVIDIA_BASE_URL = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
 
+# Global NVIDIA Key
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "")
+
 NVIDIA_KEYS = {
-    "kimi_k2_5":     os.getenv("NVIDIA_KIMI_K2_5", ""),
-    "glm5":          os.getenv("NVIDIA_GLM5", ""),
-    "sd_35_large":   os.getenv("NVIDIA_SD_35_LARGE", ""),
-    "whisper_lv3":   os.getenv("NVIDIA_WHISPER_LV3", ""),
-    "flux_dev":      os.getenv("NVIDIA_FLUX_DEV", ""),
-    "magpie_tts":    os.getenv("NVIDIA_MAGPIE_TTS", ""),
-    "gemma_3n":      os.getenv("NVIDIA_GEMMA_3N", ""),
-    "qwen3_coder":   os.getenv("NVIDIA_QWEN3_CODER", ""),
-    "llama_33_70b":  os.getenv("NVIDIA_LLAMA3_3_70B_INSTRUCT", ""),
-    "gpt_oss_120b":  os.getenv("NVIDIA_GPT_OSS_120B", ""),
-    "llama_32_11b_vision": os.getenv("NVIDIA_LLAMA3_2_11B_VISION_INSTRUCT", ""),
+    "kimi_k2_5":     os.getenv("NVIDIA_KIMI_K2_5", NVIDIA_API_KEY),
+    "glm5":          os.getenv("NVIDIA_GLM5", NVIDIA_API_KEY),
+    "sd_35_large":   os.getenv("NVIDIA_SD_35_LARGE", NVIDIA_API_KEY),
+    "whisper_lv3":   os.getenv("NVIDIA_WHISPER_LV3", NVIDIA_API_KEY),
+    "flux_dev":      os.getenv("NVIDIA_FLUX_DEV", NVIDIA_API_KEY),
+    "magpie_tts":    os.getenv("NVIDIA_MAGPIE_TTS", NVIDIA_API_KEY),
+    "gemma_3n":      os.getenv("NVIDIA_GEMMA_3N", NVIDIA_API_KEY),
+    "qwen3_coder":   os.getenv("NVIDIA_QWEN3_CODER", NVIDIA_API_KEY),
+    "llama_33_70b":  os.getenv("NVIDIA_LLAMA3_3_70B_INSTRUCT", NVIDIA_API_KEY),
+    "gpt_oss_120b":  os.getenv("NVIDIA_GPT_OSS_120B", NVIDIA_API_KEY),
+    "llama_32_11b_vision": os.getenv("NVIDIA_LLAMA3_2_11B_VISION_INSTRUCT", NVIDIA_API_KEY),
     "groq_api_key":  os.getenv("GROQ_API_KEY", ""),
 }
 

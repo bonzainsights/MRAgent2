@@ -293,11 +293,7 @@ def run_install_wizard():
             
             updates = [
                 f"\n# Auto-configured by Startup Wizard",
-                f"NVIDIA_KIMI_K2_5={key}",
-                f"NVIDIA_LLAMA3_3_70B_INSTRUCT={key}",
-                f"NVIDIA_LLAMA3_2_11B_VISION_INSTRUCT={key}",
-                f"NVIDIA_WHISPER_LV3={key}",
-                f"NVIDIA_MAGPIE_TTS={key}",
+                f"NVIDIA_API_KEY={key}",
             ]
             
             with open(env_path, "a", encoding="utf-8") as f:
@@ -306,17 +302,19 @@ def run_install_wizard():
             print("\n✅ API Key saved to .env!")
             print("Reloading environment...\n")
             
-            os.environ["NVIDIA_KIMI_K2_5"] = key
-            os.environ["NVIDIA_LLAMA3_3_70B_INSTRUCT"] = key
-            os.environ["NVIDIA_LLAMA3_2_11B_VISION_INSTRUCT"] = key
-            os.environ["NVIDIA_WHISPER_LV3"] = key
-            os.environ["NVIDIA_MAGPIE_TTS"] = key
+            os.environ["NVIDIA_API_KEY"] = key
             
             settings.NVIDIA_KEYS["kimi_k2_5"] = key
-            settings.NVIDIA_KEYS["llama_33_70b"] = key
-            settings.NVIDIA_KEYS["llama_32_11b_vision"] = key
+            settings.NVIDIA_KEYS["glm5"] = key
+            settings.NVIDIA_KEYS["sd_35_large"] = key
             settings.NVIDIA_KEYS["whisper_lv3"] = key
+            settings.NVIDIA_KEYS["flux_dev"] = key
             settings.NVIDIA_KEYS["magpie_tts"] = key
+            settings.NVIDIA_KEYS["gemma_3n"] = key
+            settings.NVIDIA_KEYS["qwen3_coder"] = key
+            settings.NVIDIA_KEYS["llama_33_70b"] = key
+            settings.NVIDIA_KEYS["gpt_oss_120b"] = key
+            settings.NVIDIA_KEYS["llama_32_11b_vision"] = key
             break
         else:
             print("❌ That doesn't look like a valid API key. Please try again.")
