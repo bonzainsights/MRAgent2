@@ -50,7 +50,7 @@ NVIDIA_KEYS = {
     "qwen3_coder":   os.getenv("NVIDIA_QWEN3_CODER", ""),
     "llama_33_70b":  os.getenv("NVIDIA_LLAMA3_3_70B_INSTRUCT", ""),
     "gpt_oss_120b":  os.getenv("NVIDIA_GPT_OSS_120B", ""),
-    "llama_32_11b_vision": os.getenv("NVIDIA_LLAMA3_2_11B_VISION", ""),
+    "llama_32_11b_vision": os.getenv("NVIDIA_LLAMA3_2_11B_VISION_INSTRUCT", ""),
     "groq_api_key":  os.getenv("GROQ_API_KEY", ""),
 }
 
@@ -62,6 +62,12 @@ LANGSEARCH_API_KEY = os.getenv("LANGSEARCH_API_KEY", "")
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+
+# ──────────────────────────────────────────────
+# Identity Configuration
+# ──────────────────────────────────────────────
+USER_NAME = os.getenv("USER_NAME", "User")
+AGENT_NAME = os.getenv("AGENT_NAME", "MRAgent")
 
 
 # ──────────────────────────────────────────────
@@ -149,9 +155,6 @@ MODEL_REGISTRY = {
     # ── Vision (Eagle Eye) ──
     "llama-3.2-11b-vision": {
         "id": "meta/llama-3.2-11b-vision-instruct",
-        "key": "groq_api_key",  # Often hosted on same platforms, check keys
-        # Wait, the user prompt implies NVIDIA NIM. Let's check keys again.
-        # But for now I'll add a new key entry if needed.
         "key": "llama_32_11b_vision",
         "type": "vlm",
         "categories": ["vision"],

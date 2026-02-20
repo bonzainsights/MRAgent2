@@ -57,7 +57,7 @@ class NvidiaLLMProvider(LLMProvider):
 
         # Check if it's a full model ID
         for name, info in MODEL_REGISTRY.items():
-            if info.get("id") == model and info.get("type") == "llm":
+            if info.get("id") == model and info.get("type") in ("llm", "vlm"):
                 return name, model
 
         # Fallback: assume it's a valid NIM model ID
@@ -222,7 +222,7 @@ class NvidiaLLMProvider(LLMProvider):
         """Return available LLM models with their info."""
         available = []
         for name, info in MODEL_REGISTRY.items():
-            if info["type"] != "llm":
+            if info["type"] not in ("llm", "vlm"):
                 continue
             key_name = info["key"]
             has_key = bool(NVIDIA_KEYS.get(key_name))

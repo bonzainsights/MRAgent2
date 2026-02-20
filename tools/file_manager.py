@@ -47,6 +47,10 @@ class ReadFileTool(Tool):
                 end_line: int = None) -> str:
         filepath = Path(path).expanduser().resolve()
 
+        # Security check: Block access to environment variables and core config files
+        if filepath.name in [".env", "mragent.json"]:
+            return f"❌ Access Denied: Cannot read system configuration file '{filepath.name}' for security reasons."
+
         if not filepath.exists():
             return f"❌ File not found: {filepath}"
         if not filepath.is_file():
@@ -108,6 +112,10 @@ class WriteFileTool(Tool):
 
     def execute(self, path: str, content: str) -> str:
         filepath = Path(path).expanduser().resolve()
+
+        # Security check: Block modifying environment variables and core config files
+        if filepath.name in [".env", "mragent.json"]:
+            return f"❌ Access Denied: Cannot write to system configuration file '{filepath.name}' for security reasons."
 
         try:
             filepath.parent.mkdir(parents=True, exist_ok=True)

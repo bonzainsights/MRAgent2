@@ -16,6 +16,7 @@ Repository: https://github.com/bonzainsights/MRAgent
 """
 
 import sys
+import os
 import argparse
 from pathlib import Path
 
@@ -89,7 +90,7 @@ def parse_args() -> argparse.Namespace:
         "--model",
         type=str,
         default=None,
-        help="Override default LLM model (e.g. kimi-k2.5, gemma-3n, qwen3-coder)",
+        help="Override default LLM model (e.g. kimi-k2.5, llama-3.3-70b, qwen3-coder)",
     )
     parser.add_argument(
         "--model-mode",
@@ -100,8 +101,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--port", "-p",
         type=int,
-        default=16226,
-        help="Port for web UI (default: 16226)",
+        default=int(os.environ.get("PORT", 16226)),
+        help="Port for web UI (default: from .env or 16226)",
     )
     parser.add_argument(
         "--version", "-V",
@@ -262,6 +263,110 @@ def run_watch(args: argparse.Namespace):
         sys.exit(1)
 
 
+def run_install_wizard():
+    """Interactive wizard to guide new users to set up API keys."""
+    from config.settings import validate_config, _PROJECT_ROOT
+    from config import settings
+    
+    report = validate_config()
+    if report["valid"]:
+        return  # Keys exist, skip wizard
+
+    print("\n" + "="*60)
+    print(" 🚀 Welcome to MRAgent Setup Wizard")
+    print("="*60)
+    print("It looks like you don't have any API keys configured yet.")
+    print("To get started for FREE, you need an NVIDIA NIM API Key.")
+    print("\n1. Go to: https://build.nvidia.com")
+    print("2. Sign in or create an account.")
+    print("3. Click 'Get API Key' and copy the generated key.")
+    print("="*60 + "\n")
+    
+    while True:
+        key = input("Paste your NVIDIA api key here (or press Enter to skip): ").strip()
+        if not key:
+            print("Skipping wizard. You may have limited functionality.")
+            break
+            
+        if len(key) > 20: 
+            env_path = _PROJECT_ROOT / ".env"
+            
+            updates = [
+                f"\n# Auto-configured by Startup Wizard",
+                f"NVIDIA_KIMI_K2_5={key}",
+                f"NVIDIA_LLAMA3_3_70B_INSTRUCT={key}",
+                f"NVIDIA_LLAMA3_2_11B_VISION_INSTRUCT={key}",
+                f"NVIDIA_WHISPER_LV3={key}",
+                f"NVIDIA_MAGPIE_TTS={key}",
+            ]
+            
+            with open(env_path, "a", encoding="utf-8") as f:
+                f.write("\n".join(updates) + "\n")
+                
+            print("\n✅ API Key saved to .env!")
+            print("Reloading environment...\n")
+            
+            os.environ["NVIDIA_KIMI_K2_5"] = key
+            os.environ["NVIDIA_LLAMA3_3_70B_INSTRUCT"] = key
+            os.environ["NVIDIA_LLAMA3_2_11B_VISION_INSTRUCT"] = key
+            os.environ["NVIDIA_WHISPER_LV3"] = key
+            os.environ["NVIDIA_MAGPIE_TTS"] = key
+            
+            settings.NVIDIA_KEYS["kimi_k2_5"] = key
+            settings.NVIDIA_KEYS["llama_33_70b"] = key
+            settings.NVIDIA_KEYS["llama_32_11b_vision"] = key
+            settings.NVIDIA_KEYS["whisper_lv3"] = key
+            settings.NVIDIA_KEYS["magpie_tts"] = key
+            break
+        else:
+            print("❌ That doesn't look like a valid API key. Please try again.")
+
+def run_identity_wizard():
+    """Interactive wizard to configure User and Agent names on first boot."""
+    from config.settings import _PROJECT_ROOT
+    from config import settings
+    import os
+    
+    # Check if USER_NAME is already in .env
+    env_path = _PROJECT_ROOT / ".env"
+    if env_path.exists():
+        with open(env_path, "r", encoding="utf-8") as f:
+            if "USER_NAME=" in f.read():
+                return
+
+    print("\n" + "="*60)
+    print(" 📛 Persona & Identity Setup")
+    print("="*60)
+    print("Let's personalize your experience!")
+    
+    user_name = input("What is your name? [default: User]: ").strip()
+    if not user_name:
+        user_name = "User"
+        
+    agent_name = input("What would you like to call me? [default: MRAgent]: ").strip()
+    if not agent_name:
+        agent_name = "MRAgent"
+
+    updates = [
+        f"\n# Identity Configuration",
+        f"USER_NAME={user_name}",
+        f"AGENT_NAME={agent_name}",
+    ]
+    
+    with open(env_path, "a", encoding="utf-8") as f:
+        f.write("\n".join(updates) + "\n")
+        
+    print(f"\n✅ Nice to meet you, {user_name}! I will answer to {agent_name}.")
+    print("="*60 + "\n")
+    
+    # Dynamically update the running environment for this session
+    os.environ["USER_NAME"] = user_name
+    os.environ["AGENT_NAME"] = agent_name
+    
+    # Update settings globals
+    settings.USER_NAME = user_name
+    settings.AGENT_NAME = agent_name
+
 def main():
     """Main entry point."""
     
@@ -280,6 +385,10 @@ def main():
     # Poneglyph Guardian Check before startup
     if not poneglyph.check_health():
          logger.warning("System health check reported issues. Run 'python main.py doctor' for details.")
+
+    # Run startup wizard if missing keys
+    run_install_wizard()
+    run_identity_wizard()
 
     args = parse_args()
 

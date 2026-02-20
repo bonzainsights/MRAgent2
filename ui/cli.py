@@ -68,10 +68,23 @@ class CLIInterface:
 
         # Register streaming callback
         self.agent.on_response(self._on_event)
+        self.agent.approval_callback = self._approval_callback
         self._current_response = ""
         self._last_model = self._mode_to_model(model_mode)  # Track current model
 
         logger.info("CLI interface initialized")
+
+    def _approval_callback(self, prompt: str) -> bool:
+        """Prompt user for approval before running dangerous tools."""
+        if self.console and self.has_rich:
+            import rich.prompt
+            self.console.print(f"\n[bold yellow]⚠️ Action Required[/bold yellow]")
+            self.console.print(prompt)
+            return rich.prompt.Confirm.ask("[bold]Approve execution?[/bold]", default=False)
+        else:
+            print(f"\n⚠️ Action Required\n{prompt}")
+            choice = input("Approve execution? (y/N): ")
+            return choice.lower() in ("y", "yes")
 
     def _on_event(self, event_type: str, data: str):
         """Handle streaming events from the agent."""
@@ -205,7 +218,7 @@ class CLIInterface:
                     self._print_info(f"✅ Model set to: {arg}")
                 else:
                     self._print_info(f"❌ Unknown model: {arg}")
-                    self._print_info(f"Available: {', '.join(k for k,v in MODEL_REGISTRY.items() if v.get('type')=='llm')}")
+                    self._print_info(f"Available: {', '.join(k for k,v in MODEL_REGISTRY.items() if v.get('type') in ('llm', 'vlm'))}")
             else:
                 # Interactive set (Inline)
                 try:
@@ -219,7 +232,7 @@ class CLIInterface:
                     # Build choices
                     choices = []
                     for model_id, info in MODEL_REGISTRY.items():
-                        if info.get("type") == "llm":
+                        if info.get("type") in ("llm", "vlm"):
                             cats = ", ".join(info.get("categories", []))
                             label = f"{model_id:<20} [dim]({cats})[/dim]"
                             choices.append({"id": model_id, "label": label})

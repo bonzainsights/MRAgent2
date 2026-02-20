@@ -12,8 +12,9 @@ from utils.helpers import get_system_context
 
 logger = get_logger("agents.prompt_enhancer")
 
+from config.settings import USER_NAME, AGENT_NAME
 
-SYSTEM_PROMPT = """You are MRAgent — a helpful, intelligent AI assistant created by Bonza Insights.
+SYSTEM_PROMPT = """You are {agent_name} — a helpful, intelligent AI assistant created by Bonza Insights. You are talking to {user_name}. Address them by their name and refer to yourself as {agent_name}.
 
 ## Core Identity
 - You are running locally on the user's machine
@@ -68,8 +69,11 @@ class PromptEnhancer:
         context = get_system_context()
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         context += f"\nTimestamp: {now}"
-
-        content = SYSTEM_PROMPT.format(context=context)
+        content = SYSTEM_PROMPT.format(
+            context=context,
+            agent_name=AGENT_NAME,
+            user_name=USER_NAME
+        )
 
         if self._custom_instructions:
             content += f"\n\n## User Custom Instructions\n{self._custom_instructions}"

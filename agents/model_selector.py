@@ -21,7 +21,7 @@ logger = get_logger("agents.model_selector")
 # Default model for each mode (first pick when switching mode)
 MODE_DEFAULTS = {
     "thinking": "gpt-oss-120b",
-    "fast": "gemma-3n",
+    "fast": "llama-3.3-70b",
     "code": "qwen3-coder",
     "browsing": "llama-3.3-70b",
     "general": "gpt-oss-120b",
@@ -68,7 +68,7 @@ class ModelSelector:
     Modes:
     - auto: classify the message and pick the best model
     - thinking: use reasoning model (default: kimi-k2.5, options: glm5, deepseek-r1)
-    - fast: use fast model (default: gemma-3n, option: kimi-k2.5, llama-3.3-70b)
+    - fast: use fast model (default: llama-3.3-70b, option: kimi-k2.5, gemma-3n)
     - code: use code model (default: qwen3-coder, options: deepseek-r1, kimi-k2.5)
     """
 

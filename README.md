@@ -47,6 +47,8 @@
 | 🔧 **Terminal Access**   | Execute shell commands and system operations                       | ✅ Implemented |
 | 📁 **File Management**   | Navigate, create, move, and organize files                         | ✅ Implemented |
 | 🔍 **Web Search**        | Search the internet via Brave Search API                           | ✅ Implemented |
+| 📛 **Identity Setup**    | Interactive wizard to customize User and Agent persona             | ✅ Implemented |
+| 🛡️ **HitL Security**     | Human-in-the-Loop required for Terminal and Code execution         | ✅ Implemented |
 
 ---
 
@@ -158,6 +160,8 @@ cp .env.example .env
 
 ### Quick Start
 
+If you boot the system without API keys or an identity configured, an **Interactive Setup Wizard** will safely guide you through copying your free NVIDIA NIM key and naming your Assistant before booting automatically!
+
 ```bash
 # Run the agent (CLI mode + Web UI)
 python main.py
@@ -219,6 +223,9 @@ MRAgent is built around **free-tier APIs** to keep costs at zero. Here are the c
 - [x] File management system
 - [x] Screen monitoring & analysis
 - [x] Web browsing automation
+- [x] Security: Terminal/Code Execution Approvals (HitL)
+- [x] Security: Web UI & Telegram Authentication
+- [x] Interactive Startup Wizards (API Keys & Identity)
 
 ---
 

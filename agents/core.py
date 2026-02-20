@@ -51,6 +51,7 @@ class AgentCore:
         self.model_override = model_override
         self.chat_id = generate_id("chat_")
         self._response_callbacks: list[Callable] = []
+        self.approval_callback: Callable[[str], bool] = None
         self._lock = threading.Lock()
 
         # Initialize with system prompt
@@ -231,8 +232,18 @@ class AgentCore:
 
             self._emit("tool_start", f"🔧 Running: {func_name}({json.dumps(func_args)[:100]})")
 
-            # Execute the tool
-            result = self.tool_registry.execute(func_name, **func_args)
+            # Execute the tool with Human-in-the-Loop check
+            result = None
+            if func_name in ["execute_terminal", "run_code"]:
+                if self.approval_callback:
+                    tool_desc = f"Agent wants to run {func_name} with arguments:\n{json.dumps(func_args, indent=2)}"
+                    self._emit("approval_required", tool_desc)
+                    approved = self.approval_callback(tool_desc)
+                    if not approved:
+                        result = "❌ Execution rejected by user."
+
+            if result is None:
+                result = self.tool_registry.execute(func_name, **func_args)
 
             self._emit("tool_result", f"✅ {func_name}: {result[:200]}")
 

@@ -11,11 +11,26 @@ Usage:
     python main.py --mode web --port 8080  # Web-only, custom port
 """
 
+import os
 import json
 import queue
 import threading
+from functools import wraps
 
 from flask import Flask, render_template_string, request, Response, jsonify, send_from_directory
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        expected_token = os.getenv("MRAGENT_ACCESS_TOKEN")
+        if not expected_token:
+            return f(*args, **kwargs)
+        
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or auth_header != f"Bearer {expected_token}":
+            return jsonify({"error": "Unauthorized"}), 401
+        return f(*args, **kwargs)
+    return decorated
 
 from agents.core import AgentCore
 from agents.model_selector import ModelSelector
@@ -28,13 +43,26 @@ logger = get_logger("ui.web")
 # The agent instance (created per-app)
 _agent = None
 _chat_store = None
-_event_queue = queue.Queue()
-
+_event_queues = {}
+_approval_events = {}
 
 def _on_event(event_type: str, data: str):
     """Callback to push events to the SSE queue."""
-    _event_queue.put({"type": event_type, "data": data})
+    if _agent and _agent.chat_id in _event_queues:
+        _event_queues[_agent.chat_id].put({"type": event_type, "data": data})
 
+def web_approval_callback(prompt: str) -> bool:
+    """Blocks the execution thread until the UI sends an approval or rejection."""
+    chat_id = _agent.chat_id
+    if chat_id not in _approval_events:
+        _approval_events[chat_id] = queue.Queue()
+        
+    # Wait for the user to approve/reject via the API endpoint
+    try:
+        response = _approval_events[chat_id].get(timeout=300) # 5 min timeout
+        return response == "approve"
+    except queue.Empty:
+        return False
 
 def create_app() -> Flask:
     """Create and configure the Flask app."""
@@ -43,13 +71,37 @@ def create_app() -> Flask:
     app = Flask(__name__)
     _agent = AgentCore()
     _agent.on_response(_on_event)
+    _agent.approval_callback = web_approval_callback
     _chat_store = ChatStore()
 
     @app.route("/")
     def index():
         return render_template_string(HTML_TEMPLATE)
 
+    @app.route("/api/login", methods=["POST"])
+    def login():
+        expected_token = os.getenv("MRAGENT_ACCESS_TOKEN")
+        if not expected_token:
+            return jsonify({"status": "ok"})
+        data = request.json or {}
+        if data.get("token") == expected_token or (request.headers.get("Authorization") == f"Bearer {expected_token}"):
+            return jsonify({"status": "ok"})
+        return jsonify({"error": "Unauthorized"}), 401
+
+    @app.route("/api/approve", methods=["POST"])
+    @require_auth
+    def approve_action():
+        """Handle human-in-the-loop approval requests."""
+        data = request.json
+        action = data.get("action") # "approve" or "reject"
+        chat_id = _agent.chat_id
+        if chat_id not in _approval_events:
+            _approval_events[chat_id] = queue.Queue()
+        _approval_events[chat_id].put(action)
+        return jsonify({"status": "ok"})
+
     @app.route("/api/chat", methods=["POST"])
+    @require_auth
     def chat():
         """Handle a chat message (non-streaming response)."""
         data = request.json
@@ -70,6 +122,7 @@ def create_app() -> Flask:
             return jsonify({"error": str(e)}), 500
 
     @app.route("/api/chat/stream", methods=["POST"])
+    @require_auth
     def chat_stream():
         """Handle a chat message with SSE streaming."""
         data = request.json
@@ -77,9 +130,15 @@ def create_app() -> Flask:
         if not message:
             return jsonify({"error": "No message provided"}), 400
 
+        chat_id = _agent.chat_id
+        if chat_id not in _event_queues:
+            _event_queues[chat_id] = queue.Queue()
+            
+        q = _event_queues[chat_id]
+        
         # Clear queue
-        while not _event_queue.empty():
-            _event_queue.get()
+        while not q.empty():
+            q.get()
 
         def generate():
             def _run():
@@ -92,16 +151,16 @@ def create_app() -> Flask:
                     if chat_info and chat_info.get("title") == "New Chat":
                         title = message[:50] + ("..." if len(message) > 50 else "")
                         _chat_store.update_chat_title(_agent.chat_id, title)
-                    _event_queue.put({"type": "done", "data": response})
+                    q.put({"type": "done", "data": response})
                 except Exception as e:
-                    _event_queue.put({"type": "error", "data": str(e)})
+                    q.put({"type": "error", "data": str(e)})
 
             thread = threading.Thread(target=_run, daemon=True)
             thread.start()
 
             while True:
                 try:
-                    event = _event_queue.get(timeout=60)
+                    event = q.get(timeout=60)
                     yield f"data: {json.dumps(event)}\n\n"
                     if event["type"] in ("done", "error"):
                         break
@@ -111,10 +170,12 @@ def create_app() -> Flask:
         return Response(generate(), mimetype="text/event-stream")
 
     @app.route("/api/stats")
+    @require_auth
     def stats():
         return jsonify(_agent.get_stats())
 
     @app.route("/api/newchat", methods=["POST"])
+    @require_auth
     def newchat():
         _agent.new_chat()
         return jsonify({"status": "ok", "chat_id": _agent.chat_id})
@@ -125,6 +186,7 @@ def create_app() -> Flask:
         return send_from_directory(str(IMAGES_DIR), filename)
 
     @app.route("/api/history")
+    @require_auth
     def history():
         """List past chat sessions with preview."""
         chats = _chat_store.list_chats()
@@ -145,6 +207,7 @@ def create_app() -> Flask:
         return jsonify(result)
 
     @app.route("/api/history/<chat_id>")
+    @require_auth
     def history_detail(chat_id):
         """Load messages for a specific chat and switch to it."""
         messages = _chat_store.get_messages(chat_id)
@@ -153,11 +216,12 @@ def create_app() -> Flask:
         return jsonify(messages)
 
     @app.route("/api/models")
+    @require_auth
     def models():
         """List available LLM models grouped by category."""
         llm_models = []
         for name, info in MODEL_REGISTRY.items():
-            if info.get("type") == "llm":
+            if info.get("type") in ("llm", "vlm"):
                 llm_models.append({
                     "name": name,
                     "categories": info.get("categories", []),
@@ -174,6 +238,7 @@ def create_app() -> Flask:
         })
 
     @app.route("/api/model", methods=["POST"])
+    @require_auth
     def set_model():
         """Switch to a specific model."""
         data = request.json
@@ -184,6 +249,7 @@ def create_app() -> Flask:
         return jsonify({"status": "ok", "model": model_name})
 
     @app.route("/api/mode", methods=["POST"])
+    @require_auth
     def set_mode():
         """Switch model selection mode."""
         data = request.json
@@ -199,12 +265,14 @@ def create_app() -> Flask:
         })
 
     @app.route("/api/voices", methods=["GET"])
+    @require_auth
     def get_voices():
         """Get available TTS voices."""
         from providers.tts import VOICES, DEFAULT_VOICE
         return jsonify({"voices": VOICES, "default": DEFAULT_VOICE})
 
     @app.route("/api/voice", methods=["POST"])
+    @require_auth
     def voice():
         """Handle voice audio upload and transcription."""
         if "file" not in request.files:
@@ -877,6 +945,17 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 </head>
 <body>
 
+<!-- Login Overlay -->
+<div id="login-overlay" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
+  <div style="background:var(--surface); padding:30px; border-radius:12px; border:1px solid var(--border); text-align:center; width:300px;">
+    <h2>🔒 Login Required</h2>
+    <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:20px;">Please enter your access token</p>
+    <input type="password" id="login-token" placeholder="MRAGENT_ACCESS_TOKEN" style="width:100%; padding:10px; margin-bottom:15px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); outline:none;" onkeydown="if(event.key==='Enter') submitLogin()">
+    <button onclick="submitLogin()" style="width:100%; padding:10px; background:var(--accent); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600;">Authenticate</button>
+    <div id="login-error" style="color:var(--error); font-size:0.8rem; margin-top:10px; display:none;">Invalid token</div>
+  </div>
+</div>
+
 <div class="app">
   <!-- Header -->
   <div class="header">
@@ -995,6 +1074,67 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <div class="overlay" id="overlay" style="display:none;" onclick="closePanels()"></div>
 
 <script>
+
+// ── Fetch Wrapper for Auth ──
+const originalFetch = window.fetch;
+window.fetch = async function() {
+    let [resource, config] = arguments;
+    if (typeof resource === 'string' && resource.startsWith('/api/')) {
+        config = config || {};
+        config.headers = config.headers || {};
+        const token = localStorage.getItem('mragent_token');
+        if (token && !config.headers['Authorization']) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+    }
+    const response = await originalFetch(resource, config);
+    if (response.status === 401 && resource !== '/api/login') {
+        document.getElementById('login-overlay').style.display = 'flex';
+    }
+    return response;
+};
+
+async function submitLogin() {
+    const token = document.getElementById('login-token').value.trim();
+    localStorage.setItem('mragent_token', token);
+    
+    try {
+        const resp = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+        });
+        
+        if (resp.status === 200) {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('login-error').style.display = 'none';
+            // Reload initial data
+            loadModels();
+            loadHistory();
+            updateStats();
+            loadVoices();
+        } else {
+            document.getElementById('login-error').style.display = 'block';
+            localStorage.removeItem('mragent_token');
+        }
+    } catch(e) {
+        document.getElementById('login-error').style.display = 'block';
+    }
+}
+
+// Initial auth check
+fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) }).then(resp => {
+  if (resp.status === 401) {
+    document.getElementById('login-overlay').style.display = 'flex';
+  } else {
+     // ── Init if no auth required ──
+     loadModels();
+     loadHistory();
+     updateStats();
+     loadVoices();
+  }
+});
+
 // ── Elements ──
 const chat = document.getElementById('chat');
 const input = document.getElementById('input');
@@ -1110,6 +1250,36 @@ function escapeHtml(text) {
   const d = document.createElement('div');
   d.textContent = text;
   return d.innerHTML;
+}
+
+// ── Approval UI ──
+function addApprovalUI(promptText) {
+  const div = document.createElement('div');
+  div.className = 'message tool';
+  div.innerHTML = `
+    <div class="avatar">⚠️</div>
+    <div class="content" style="border:1px solid var(--accent); padding:10px; border-radius:8px;">
+      <strong>Action Required</strong><br>
+      <pre style="white-space:pre-wrap; font-size:0.8rem; margin:10px 0; font-family:monospace;">${escapeHtml(promptText)}</pre>
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <button onclick="respondApproval(this, 'approve')" style="padding:6px 12px; background:var(--accent); color:white; border:none; border-radius:6px; cursor:pointer;">Approve</button>
+        <button onclick="respondApproval(this, 'reject')" style="padding:6px 12px; background:var(--surface3); color:white; border:none; border-radius:6px; cursor:pointer;">Reject</button>
+      </div>
+    </div>`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function respondApproval(btn, action) {
+  const container = btn.parentElement;
+  container.innerHTML = `<span style="font-weight:bold; color: ${action === 'approve' ? 'var(--accent)' : 'var(--error)'}">${action === 'approve' ? '✅ Approved' : '❌ Rejected'}</span>`;
+  try {
+    await fetch('/api/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action })
+    });
+  } catch(e) {}
 }
 
 // ── Message Queue & Abort ──
@@ -1249,6 +1419,8 @@ async function processMessage(msg) {
             modelBadge.textContent = event.data;
           } else if (event.type === 'tool_start' || event.type === 'tool_result') {
             addMessage('tool', event.data);
+          } else if (event.type === 'approval_required') {
+            addApprovalUI(event.data);
           } else if (event.type === 'done') {
             if (!fullContent) {
               contentEl.innerHTML = formatContent(event.data);
@@ -1417,10 +1589,6 @@ function closePanels() {
 
 // ── Init ──
 input.focus();
-loadModels();
-loadHistory();
-updateStats();
-loadVoices();
 
 // ── Voice Options ──
 async function loadVoices() {

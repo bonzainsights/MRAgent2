@@ -64,8 +64,29 @@ async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     if not agent:
         return
 
-    user_text = update.message.text
     chat_id = update.effective_chat.id
+    user_text = update.message.text
+    
+    # Security Whitelist Check
+    allowed = os.getenv("ALLOWED_TELEGRAM_CHATS")
+    if not allowed:
+        logger.warning(f"No ALLOWED_TELEGRAM_CHATS setup. User {chat_id} attempted access.")
+        await update.message.reply_markdown(
+            f"🚫 **Setup Required**\n\n"
+            f"Your Chat ID (`{chat_id}`) is not authorized to use this MRAgent bot.\n\n"
+            f"To authorize yourself, open your `.env` file and add:\n"
+            f"`ALLOWED_TELEGRAM_CHATS={chat_id}`\n\n"
+            f"Then restart the application."
+        )
+        return
+
+    if str(chat_id) not in [c.strip() for c in allowed.split(",")]:
+        logger.warning(f"Unauthorized access attempt from chat_id: {chat_id}")
+        await update.message.reply_markdown(
+            f"🚫 **Unauthorized Access**\n\n"
+            f"Your Chat ID (`{chat_id}`) is not in the authorized whitelist."
+        )
+        return
     
     logger.info(f"Telegram msg from {chat_id}: {user_text}")
 
@@ -116,6 +137,28 @@ async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYP
         return
 
     chat_id = update.effective_chat.id
+    
+    # Security Whitelist Check
+    allowed = os.getenv("ALLOWED_TELEGRAM_CHATS")
+    if not allowed:
+        logger.warning(f"No ALLOWED_TELEGRAM_CHATS setup. User {chat_id} attempted voice access.")
+        await update.message.reply_markdown(
+            f"🚫 **Setup Required**\n\n"
+            f"Your Chat ID (`{chat_id}`) is not authorized to use this MRAgent bot.\n\n"
+            f"To authorize yourself, open your `.env` file and add:\n"
+            f"`ALLOWED_TELEGRAM_CHATS={chat_id}`\n\n"
+            f"Then restart the application."
+        )
+        return
+
+    if str(chat_id) not in [c.strip() for c in allowed.split(",")]:
+        logger.warning(f"Unauthorized voice attempt from chat_id: {chat_id}")
+        await update.message.reply_markdown(
+            f"🚫 **Unauthorized Access**\n\n"
+            f"Your Chat ID (`{chat_id}`) is not in the authorized whitelist."
+        )
+        return
+
     voice = update.message.voice
     
     logger.info(f"Received voice message from {chat_id}")
