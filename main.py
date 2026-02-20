@@ -165,8 +165,11 @@ def run_cli(args: argparse.Namespace):
         )
         cli.run()
     except ImportError as e:
-        logger.error(f"CLI dependencies missing: {e}")
-        logger.info("Install with: pip install rich prompt-toolkit")
+        if "rich" in str(e) or "prompt" in str(e):
+            logger.error(f"CLI dependencies missing: {e}")
+            logger.info("Install with: pip install rich prompt-toolkit")
+        else:
+            logger.error(f"Failed to start CLI due to missing module: {e}")
         sys.exit(1)
 
 
