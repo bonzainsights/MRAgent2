@@ -30,6 +30,7 @@ COMMANDS = {
     "/clear":    "Clear the screen",
     "/skills":   "Configure API skills (Telegram, AgentMail...)",
     "/email":    "Send an email interactively",
+    "/identity": "Change your name or the agent's name",
     "/watch":    "Start Eagle Eye Watcher mode",
     "/exit":     "Exit MRAgent",
 }
@@ -314,6 +315,9 @@ class CLIInterface:
         elif command == "/clear":
             print("\033[2J\033[H", end="")  # ANSI clear
 
+        elif command == "/identity":
+            self._configure_identity()
+
         elif command == "/skills":
             self._configure_skills()
 
@@ -449,6 +453,41 @@ class CLIInterface:
             self._configure_generic_skill("NVIDIA API", ["NVIDIA_API_KEY"])
         elif choice == "groq":
             self._configure_generic_skill("Groq API", ["GROQ_API_KEY"])
+
+    def _configure_identity(self):
+        """Interactive identity configuration."""
+        import os
+        from config import settings
+        from utils.config_manager import update_env_key
+        
+        self._print_info("\n📛 Identity Configuration")
+        
+        current_user = os.getenv("USER_NAME", "User")
+        current_agent = os.getenv("AGENT_NAME", "MRAgent")
+        
+        print(f"Current User Name: {current_user}")
+        new_user = self._get_input_clean("Enter new User Name (Press Enter to keep): ")
+        
+        print(f"Current Agent Name: {current_agent}")
+        new_agent = self._get_input_clean("Enter new Agent Name (Press Enter to keep): ")
+        
+        changes = 0
+        if new_user and new_user != current_user:
+            if update_env_key("USER_NAME", new_user):
+                os.environ["USER_NAME"] = new_user
+                settings.USER_NAME = new_user
+                changes += 1
+                
+        if new_agent and new_agent != current_agent:
+            if update_env_key("AGENT_NAME", new_agent):
+                os.environ["AGENT_NAME"] = new_agent
+                settings.AGENT_NAME = new_agent
+                changes += 1
+                
+        if changes > 0:
+            self._print_info(f"\n✅ Identity updated! Nice to meet you, {settings.USER_NAME}. I will answer to {settings.AGENT_NAME}.")
+        else:
+            self._print_info("\nNo changes made.")
 
     def _configure_search_provider(self):
         """Specific configuration for search providers."""
