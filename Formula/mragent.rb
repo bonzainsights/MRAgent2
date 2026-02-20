@@ -1,15 +1,239 @@
-class Mragent < Formula
+Collecting homebrew-pypi-poet
+  Using cached homebrew_pypi_poet-0.10.0-py2.py3-none-any.whl.metadata (639 bytes)
+Collecting bonza-mragent
+  Using cached bonza_mragent-0.1.4-py3-none-any.whl.metadata (11 kB)
+Collecting jinja2 (from homebrew-pypi-poet)
+  Using cached jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting setuptools (from homebrew-pypi-poet)
+  Using cached setuptools-82.0.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting openai>=1.0.0 (from bonza-mragent)
+  Using cached openai-2.21.0-py3-none-any.whl.metadata (29 kB)
+Collecting requests>=2.31.0 (from bonza-mragent)
+  Using cached requests-2.32.5-py3-none-any.whl.metadata (4.9 kB)
+Collecting python-dotenv>=1.0.0 (from bonza-mragent)
+  Using cached python_dotenv-1.2.1-py3-none-any.whl.metadata (25 kB)
+Collecting nvidia-riva-client>=2.14.0 (from bonza-mragent)
+  Using cached nvidia_riva_client-2.24.0-py3-none-any.whl.metadata (10 kB)
+Collecting sounddevice>=0.4.6 (from bonza-mragent)
+  Using cached sounddevice-0.5.5-py3-none-macosx_10_6_x86_64.macosx_10_6_universal2.whl.metadata (1.4 kB)
+Collecting numpy>=1.24.0 (from bonza-mragent)
+  Using cached numpy-2.4.2-cp313-cp313-macosx_14_0_arm64.whl.metadata (6.6 kB)
+Collecting rich>=13.0.0 (from bonza-mragent)
+  Using cached rich-14.3.3-py3-none-any.whl.metadata (18 kB)
+Collecting prompt-toolkit>=3.0.0 (from bonza-mragent)
+  Using cached prompt_toolkit-3.0.52-py3-none-any.whl.metadata (6.4 kB)
+Collecting Pillow>=10.0.0 (from bonza-mragent)
+  Using cached pillow-12.1.1-cp313-cp313-macosx_11_0_arm64.whl.metadata (8.8 kB)
+Collecting pyautogui>=0.9.54 (from bonza-mragent)
+  Using cached pyautogui-0.9.54-py3-none-any.whl
+Collecting flask>=3.0.0 (from bonza-mragent)
+  Using cached flask-3.1.3-py3-none-any.whl.metadata (3.2 kB)
+Collecting beautifulsoup4>=4.12.0 (from bonza-mragent)
+  Using cached beautifulsoup4-4.14.3-py3-none-any.whl.metadata (3.8 kB)
+Collecting python-telegram-bot>=20.0 (from bonza-mragent)
+  Using cached python_telegram_bot-22.6-py3-none-any.whl.metadata (17 kB)
+Collecting edge-tts>=7.0.0 (from bonza-mragent)
+  Using cached edge_tts-7.2.7-py3-none-any.whl.metadata (5.5 kB)
+Collecting croniter>=3.0.0 (from bonza-mragent)
+  Using cached croniter-6.0.0-py2.py3-none-any.whl.metadata (32 kB)
+Collecting schedule>=1.2.0 (from bonza-mragent)
+  Using cached schedule-1.2.2-py3-none-any.whl.metadata (3.8 kB)
+Collecting soupsieve>=1.6.1 (from beautifulsoup4>=4.12.0->bonza-mragent)
+  Using cached soupsieve-2.8.3-py3-none-any.whl.metadata (4.6 kB)
+Collecting typing-extensions>=4.0.0 (from beautifulsoup4>=4.12.0->bonza-mragent)
+  Using cached typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting python-dateutil (from croniter>=3.0.0->bonza-mragent)
+  Using cached python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting pytz>2021.1 (from croniter>=3.0.0->bonza-mragent)
+  Using cached pytz-2025.2-py2.py3-none-any.whl.metadata (22 kB)
+Collecting aiohttp<4.0.0,>=3.8.0 (from edge-tts>=7.0.0->bonza-mragent)
+  Using cached aiohttp-3.13.3-cp313-cp313-macosx_11_0_arm64.whl.metadata (8.1 kB)
+Collecting certifi>=2023.11.17 (from edge-tts>=7.0.0->bonza-mragent)
+  Using cached certifi-2026.1.4-py3-none-any.whl.metadata (2.5 kB)
+Collecting tabulate<1.0.0,>=0.4.4 (from edge-tts>=7.0.0->bonza-mragent)
+  Using cached tabulate-0.9.0-py3-none-any.whl.metadata (34 kB)
+Collecting aiohappyeyeballs>=2.5.0 (from aiohttp<4.0.0,>=3.8.0->edge-tts>=7.0.0->bonza-mragent)
+  Using cached aiohappyeyeballs-2.6.1-py3-none-any.whl.metadata (5.9 kB)
+Collecting aiosignal>=1.4.0 (from aiohttp<4.0.0,>=3.8.0->edge-tts>=7.0.0->bonza-mragent)
+  Using cached aiosignal-1.4.0-py3-none-any.whl.metadata (3.7 kB)
+Collecting attrs>=17.3.0 (from aiohttp<4.0.0,>=3.8.0->edge-tts>=7.0.0->bonza-mragent)
+  Using cached attrs-25.4.0-py3-none-any.whl.metadata (10 kB)
+Collecting frozenlist>=1.1.1 (from aiohttp<4.0.0,>=3.8.0->edge-tts>=7.0.0->bonza-mragent)
+  Using cached frozenlist-1.8.0-cp313-cp313-macosx_11_0_arm64.whl.metadata (20 kB)
+Collecting multidict<7.0,>=4.5 (from aiohttp<4.0.0,>=3.8.0->edge-tts>=7.0.0->bonza-mragent)
+  Using cached multidict-6.7.1-cp313-cp313-macosx_11_0_arm64.whl.metadata (5.3 kB)
+Collecting propcache>=0.2.0 (from aiohttp<4.0.0,>=3.8.0->edge-tts>=7.0.0->bonza-mragent)
+  Using cached propcache-0.4.1-cp313-cp313-macosx_11_0_arm64.whl.metadata (13 kB)
+Collecting yarl<2.0,>=1.17.0 (from aiohttp<4.0.0,>=3.8.0->edge-tts>=7.0.0->bonza-mragent)
+  Using cached yarl-1.22.0-cp313-cp313-macosx_11_0_arm64.whl.metadata (75 kB)
+Collecting idna>=2.0 (from yarl<2.0,>=1.17.0->aiohttp<4.0.0,>=3.8.0->edge-tts>=7.0.0->bonza-mragent)
+  Using cached idna-3.11-py3-none-any.whl.metadata (8.4 kB)
+Collecting blinker>=1.9.0 (from flask>=3.0.0->bonza-mragent)
+  Using cached blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+Collecting click>=8.1.3 (from flask>=3.0.0->bonza-mragent)
+  Using cached click-8.3.1-py3-none-any.whl.metadata (2.6 kB)
+Collecting itsdangerous>=2.2.0 (from flask>=3.0.0->bonza-mragent)
+  Using cached itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+Collecting markupsafe>=2.1.1 (from flask>=3.0.0->bonza-mragent)
+  Using cached markupsafe-3.0.3-cp313-cp313-macosx_11_0_arm64.whl.metadata (2.7 kB)
+Collecting werkzeug>=3.1.0 (from flask>=3.0.0->bonza-mragent)
+  Using cached werkzeug-3.1.6-py3-none-any.whl.metadata (4.0 kB)
+Collecting setuptools (from homebrew-pypi-poet)
+  Using cached setuptools-78.1.1-py3-none-any.whl.metadata (6.5 kB)
+Collecting grpcio==1.67.1 (from nvidia-riva-client>=2.14.0->bonza-mragent)
+  Using cached grpcio-1.67.1-cp313-cp313-macosx_10_13_universal2.whl.metadata (3.9 kB)
+Collecting grpcio-tools==1.67.1 (from nvidia-riva-client>=2.14.0->bonza-mragent)
+  Using cached grpcio_tools-1.67.1-cp313-cp313-macosx_10_13_universal2.whl.metadata (5.3 kB)
+Collecting websockets==15.0.1 (from nvidia-riva-client>=2.14.0->bonza-mragent)
+  Using cached websockets-15.0.1-cp313-cp313-macosx_11_0_arm64.whl.metadata (6.8 kB)
+Collecting protobuf<6.0dev,>=5.26.1 (from grpcio-tools==1.67.1->nvidia-riva-client>=2.14.0->bonza-mragent)
+  Using cached protobuf-5.29.6-cp38-abi3-macosx_10_9_universal2.whl.metadata (592 bytes)
+Collecting anyio<5,>=3.5.0 (from openai>=1.0.0->bonza-mragent)
+  Using cached anyio-4.12.1-py3-none-any.whl.metadata (4.3 kB)
+Collecting distro<2,>=1.7.0 (from openai>=1.0.0->bonza-mragent)
+  Using cached distro-1.9.0-py3-none-any.whl.metadata (6.8 kB)
+Collecting httpx<1,>=0.23.0 (from openai>=1.0.0->bonza-mragent)
+  Using cached httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+Collecting jiter<1,>=0.10.0 (from openai>=1.0.0->bonza-mragent)
+  Using cached jiter-0.13.0-cp313-cp313-macosx_11_0_arm64.whl.metadata (5.2 kB)
+Collecting pydantic<3,>=1.9.0 (from openai>=1.0.0->bonza-mragent)
+  Using cached pydantic-2.12.5-py3-none-any.whl.metadata (90 kB)
+Collecting sniffio (from openai>=1.0.0->bonza-mragent)
+  Using cached sniffio-1.3.1-py3-none-any.whl.metadata (3.9 kB)
+Collecting tqdm>4 (from openai>=1.0.0->bonza-mragent)
+  Using cached tqdm-4.67.3-py3-none-any.whl.metadata (57 kB)
+Collecting httpcore==1.* (from httpx<1,>=0.23.0->openai>=1.0.0->bonza-mragent)
+  Using cached httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+Collecting h11>=0.16 (from httpcore==1.*->httpx<1,>=0.23.0->openai>=1.0.0->bonza-mragent)
+  Using cached h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting annotated-types>=0.6.0 (from pydantic<3,>=1.9.0->openai>=1.0.0->bonza-mragent)
+  Using cached annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)
+Collecting pydantic-core==2.41.5 (from pydantic<3,>=1.9.0->openai>=1.0.0->bonza-mragent)
+  Using cached pydantic_core-2.41.5-cp313-cp313-macosx_11_0_arm64.whl.metadata (7.3 kB)
+Collecting typing-inspection>=0.4.2 (from pydantic<3,>=1.9.0->openai>=1.0.0->bonza-mragent)
+  Using cached typing_inspection-0.4.2-py3-none-any.whl.metadata (2.6 kB)
+Collecting wcwidth (from prompt-toolkit>=3.0.0->bonza-mragent)
+  Using cached wcwidth-0.6.0-py3-none-any.whl.metadata (30 kB)
+Collecting pyobjc-core (from pyautogui>=0.9.54->bonza-mragent)
+  Using cached pyobjc_core-12.1-cp313-cp313-macosx_10_13_universal2.whl.metadata (2.8 kB)
+Collecting pyobjc-framework-quartz (from pyautogui>=0.9.54->bonza-mragent)
+  Using cached pyobjc_framework_quartz-12.1-cp313-cp313-macosx_10_13_universal2.whl.metadata (3.6 kB)
+Collecting pymsgbox (from pyautogui>=0.9.54->bonza-mragent)
+  Using cached pymsgbox-2.0.1-py3-none-any.whl.metadata (4.4 kB)
+Collecting pytweening>=1.0.4 (from pyautogui>=0.9.54->bonza-mragent)
+  Using cached pytweening-1.2.0-py3-none-any.whl
+Collecting pyscreeze>=0.1.21 (from pyautogui>=0.9.54->bonza-mragent)
+  Using cached pyscreeze-1.0.1-py3-none-any.whl
+Collecting pygetwindow>=0.0.5 (from pyautogui>=0.9.54->bonza-mragent)
+  Using cached pygetwindow-0.0.9-py3-none-any.whl
+Collecting mouseinfo (from pyautogui>=0.9.54->bonza-mragent)
+  Using cached mouseinfo-0.1.3-py3-none-any.whl
+Collecting pyrect (from pygetwindow>=0.0.5->pyautogui>=0.9.54->bonza-mragent)
+  Using cached pyrect-0.2.0-py2.py3-none-any.whl
+Collecting charset_normalizer<4,>=2 (from requests>=2.31.0->bonza-mragent)
+  Using cached charset_normalizer-3.4.4-cp313-cp313-macosx_10_13_universal2.whl.metadata (37 kB)
+Collecting urllib3<3,>=1.21.1 (from requests>=2.31.0->bonza-mragent)
+  Using cached urllib3-2.6.3-py3-none-any.whl.metadata (6.9 kB)
+Collecting markdown-it-py>=2.2.0 (from rich>=13.0.0->bonza-mragent)
+  Using cached markdown_it_py-4.0.0-py3-none-any.whl.metadata (7.3 kB)
+Collecting pygments<3.0.0,>=2.13.0 (from rich>=13.0.0->bonza-mragent)
+  Using cached pygments-2.19.2-py3-none-any.whl.metadata (2.5 kB)
+Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich>=13.0.0->bonza-mragent)
+  Using cached mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+Collecting cffi (from sounddevice>=0.4.6->bonza-mragent)
+  Using cached cffi-2.0.0-cp313-cp313-macosx_11_0_arm64.whl.metadata (2.6 kB)
+Collecting pycparser (from cffi->sounddevice>=0.4.6->bonza-mragent)
+  Using cached pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+Collecting rubicon-objc (from mouseinfo->pyautogui>=0.9.54->bonza-mragent)
+  Using cached rubicon_objc-0.5.3-py3-none-any.whl.metadata (4.4 kB)
+Collecting pyperclip (from mouseinfo->pyautogui>=0.9.54->bonza-mragent)
+  Using cached pyperclip-1.11.0-py3-none-any.whl.metadata (2.4 kB)
+Collecting pyobjc-framework-Cocoa>=12.1 (from pyobjc-framework-quartz->pyautogui>=0.9.54->bonza-mragent)
+  Using cached pyobjc_framework_cocoa-12.1-cp313-cp313-macosx_10_13_universal2.whl.metadata (2.6 kB)
+Collecting six>=1.5 (from python-dateutil->croniter>=3.0.0->bonza-mragent)
+  Using cached six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Using cached homebrew_pypi_poet-0.10.0-py2.py3-none-any.whl (7.8 kB)
+Using cached bonza_mragent-0.1.4-py3-none-any.whl (98 kB)
+Using cached beautifulsoup4-4.14.3-py3-none-any.whl (107 kB)
+Using cached croniter-6.0.0-py2.py3-none-any.whl (25 kB)
+Using cached edge_tts-7.2.7-py3-none-any.whl (30 kB)
+Using cached aiohttp-3.13.3-cp313-cp313-macosx_11_0_arm64.whl (490 kB)
+Using cached multidict-6.7.1-cp313-cp313-macosx_11_0_arm64.whl (43 kB)
+Using cached tabulate-0.9.0-py3-none-any.whl (35 kB)
+Using cached typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+Using cached yarl-1.22.0-cp313-cp313-macosx_11_0_arm64.whl (93 kB)
+Using cached aiohappyeyeballs-2.6.1-py3-none-any.whl (15 kB)
+Using cached aiosignal-1.4.0-py3-none-any.whl (7.5 kB)
+Using cached attrs-25.4.0-py3-none-any.whl (67 kB)
+Using cached certifi-2026.1.4-py3-none-any.whl (152 kB)
+Using cached flask-3.1.3-py3-none-any.whl (103 kB)
+Using cached blinker-1.9.0-py3-none-any.whl (8.5 kB)
+Using cached click-8.3.1-py3-none-any.whl (108 kB)
+Using cached frozenlist-1.8.0-cp313-cp313-macosx_11_0_arm64.whl (49 kB)
+Using cached idna-3.11-py3-none-any.whl (71 kB)
+Using cached itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+Using cached jinja2-3.1.6-py3-none-any.whl (134 kB)
+Using cached markupsafe-3.0.3-cp313-cp313-macosx_11_0_arm64.whl (12 kB)
+Using cached numpy-2.4.2-cp313-cp313-macosx_14_0_arm64.whl (5.2 MB)
+Using cached nvidia_riva_client-2.24.0-py3-none-any.whl (55 kB)
+Using cached grpcio-1.67.1-cp313-cp313-macosx_10_13_universal2.whl (10.9 MB)
+Using cached grpcio_tools-1.67.1-cp313-cp313-macosx_10_13_universal2.whl (5.5 MB)
+Using cached setuptools-78.1.1-py3-none-any.whl (1.3 MB)
+Using cached websockets-15.0.1-cp313-cp313-macosx_11_0_arm64.whl (173 kB)
+Using cached protobuf-5.29.6-cp38-abi3-macosx_10_9_universal2.whl (418 kB)
+Using cached openai-2.21.0-py3-none-any.whl (1.1 MB)
+Using cached anyio-4.12.1-py3-none-any.whl (113 kB)
+Using cached distro-1.9.0-py3-none-any.whl (20 kB)
+Using cached httpx-0.28.1-py3-none-any.whl (73 kB)
+Using cached httpcore-1.0.9-py3-none-any.whl (78 kB)
+Using cached jiter-0.13.0-cp313-cp313-macosx_11_0_arm64.whl (317 kB)
+Using cached pydantic-2.12.5-py3-none-any.whl (463 kB)
+Using cached pydantic_core-2.41.5-cp313-cp313-macosx_11_0_arm64.whl (1.9 MB)
+Using cached annotated_types-0.7.0-py3-none-any.whl (13 kB)
+Using cached h11-0.16.0-py3-none-any.whl (37 kB)
+Using cached pillow-12.1.1-cp313-cp313-macosx_11_0_arm64.whl (4.7 MB)
+Using cached prompt_toolkit-3.0.52-py3-none-any.whl (391 kB)
+Using cached propcache-0.4.1-cp313-cp313-macosx_11_0_arm64.whl (46 kB)
+Using cached python_dotenv-1.2.1-py3-none-any.whl (21 kB)
+Using cached python_telegram_bot-22.6-py3-none-any.whl (737 kB)
+Using cached pytz-2025.2-py2.py3-none-any.whl (509 kB)
+Using cached requests-2.32.5-py3-none-any.whl (64 kB)
+Using cached charset_normalizer-3.4.4-cp313-cp313-macosx_10_13_universal2.whl (208 kB)
+Using cached urllib3-2.6.3-py3-none-any.whl (131 kB)
+Using cached rich-14.3.3-py3-none-any.whl (310 kB)
+Using cached pygments-2.19.2-py3-none-any.whl (1.2 MB)
+Using cached markdown_it_py-4.0.0-py3-none-any.whl (87 kB)
+Using cached mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Using cached schedule-1.2.2-py3-none-any.whl (12 kB)
+Using cached sounddevice-0.5.5-py3-none-macosx_10_6_x86_64.macosx_10_6_universal2.whl (108 kB)
+Using cached soupsieve-2.8.3-py3-none-any.whl (37 kB)
+Using cached tqdm-4.67.3-py3-none-any.whl (78 kB)
+Using cached typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+Using cached werkzeug-3.1.6-py3-none-any.whl (225 kB)
+Using cached cffi-2.0.0-cp313-cp313-macosx_11_0_arm64.whl (181 kB)
+Using cached pycparser-3.0-py3-none-any.whl (48 kB)
+Using cached pymsgbox-2.0.1-py3-none-any.whl (10.0 kB)
+Using cached pyobjc_core-12.1-cp313-cp313-macosx_10_13_universal2.whl (677 kB)
+Using cached pyobjc_framework_quartz-12.1-cp313-cp313-macosx_10_13_universal2.whl (219 kB)
+Using cached pyobjc_framework_cocoa-12.1-cp313-cp313-macosx_10_13_universal2.whl (384 kB)
+Using cached pyperclip-1.11.0-py3-none-any.whl (11 kB)
+Using cached python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Using cached six-1.17.0-py2.py3-none-any.whl (11 kB)
+Using cached rubicon_objc-0.5.3-py3-none-any.whl (64 kB)
+Using cached sniffio-1.3.1-py3-none-any.whl (10 kB)
+Using cached wcwidth-0.6.0-py3-none-any.whl (94 kB)
+Installing collected packages: pytz, pytweening, pyscreeze, pyrect, pyperclip, websockets, wcwidth, urllib3, typing-extensions, tqdm, tabulate, soupsieve, sniffio, six, setuptools, schedule, rubicon-objc, python-dotenv, pyobjc-core, pymsgbox, pygments, pygetwindow, pycparser, protobuf, propcache, Pillow, numpy, multidict, mdurl, markupsafe, jiter, itsdangerous, idna, h11, grpcio, frozenlist, distro, click, charset_normalizer, certifi, blinker, attrs, annotated-types, aiohappyeyeballs, yarl, werkzeug, typing-inspection, requests, python-dateutil, pyobjc-framework-Cocoa, pydantic-core, prompt-toolkit, mouseinfo, markdown-it-py, jinja2, httpcore, grpcio-tools, cffi, beautifulsoup4, anyio, aiosignal, sounddevice, rich, pyobjc-framework-quartz, pydantic, nvidia-riva-client, httpx, homebrew-pypi-poet, flask, croniter, aiohttp, python-telegram-bot, pyautogui, openai, edge-tts, bonza-mragent
+
+Successfully installed Pillow-12.1.1 aiohappyeyeballs-2.6.1 aiohttp-3.13.3 aiosignal-1.4.0 annotated-types-0.7.0 anyio-4.12.1 attrs-25.4.0 beautifulsoup4-4.14.3 blinker-1.9.0 bonza-mragent-0.1.4 certifi-2026.1.4 cffi-2.0.0 charset_normalizer-3.4.4 click-8.3.1 croniter-6.0.0 distro-1.9.0 edge-tts-7.2.7 flask-3.1.3 frozenlist-1.8.0 grpcio-1.67.1 grpcio-tools-1.67.1 h11-0.16.0 homebrew-pypi-poet-0.10.0 httpcore-1.0.9 httpx-0.28.1 idna-3.11 itsdangerous-2.2.0 jinja2-3.1.6 jiter-0.13.0 markdown-it-py-4.0.0 markupsafe-3.0.3 mdurl-0.1.2 mouseinfo-0.1.3 multidict-6.7.1 numpy-2.4.2 nvidia-riva-client-2.24.0 openai-2.21.0 prompt-toolkit-3.0.52 propcache-0.4.1 protobuf-5.29.6 pyautogui-0.9.54 pycparser-3.0 pydantic-2.12.5 pydantic-core-2.41.5 pygetwindow-0.0.9 pygments-2.19.2 pymsgbox-2.0.1 pyobjc-core-12.1 pyobjc-framework-Cocoa-12.1 pyobjc-framework-quartz-12.1 pyperclip-1.11.0 pyrect-0.2.0 pyscreeze-1.0.1 python-dateutil-2.9.0.post0 python-dotenv-1.2.1 python-telegram-bot-22.6 pytweening-1.2.0 pytz-2025.2 requests-2.32.5 rich-14.3.3 rubicon-objc-0.5.3 schedule-1.2.2 setuptools-78.1.1 six-1.17.0 sniffio-1.3.1 sounddevice-0.5.5 soupsieve-2.8.3 tabulate-0.9.0 tqdm-4.67.3 typing-extensions-4.15.0 typing-inspection-0.4.2 urllib3-2.6.3 wcwidth-0.6.0 websockets-15.0.1 werkzeug-3.1.6 yarl-1.22.0
+class BonzaMragent < Formula
   include Language::Python::Virtualenv
 
-  desc "Lightweight, open-source AI Agent powered by free APIs"
+  desc "Shiny new formula"
   homepage "https://github.com/bonzainsights/MRAgent"
-  url "https://files.pythonhosted.org/packages/source/b/bonza-mragent/bonza_mragent-0.1.3.tar.gz"
-  sha256 "2ff4f61fbcec6497874042832bb28483b34faab89653c449c1166be1f2d83581"
-  license "MIT"
+  url "https://files.pythonhosted.org/packages/be/0a/b2cb9ff66dc98c9a59c088982a8e35beb6a88b601d9f52238c970f037432/bonza_mragent-0.1.4.tar.gz"
+  sha256 "f40692df38333b6deff5cf150dff43d303b70b43d46f6204eefff1461b27a84e"
 
-  depends_on "python@3.11"
-  depends_on "portaudio" # For sounddevice
-  depends_on "ffmpeg"    # For audio processing
+  depends_on "python3"
 
   resource "aiohappyeyeballs" do
     url "https://files.pythonhosted.org/packages/26/30/f84a107a9c4331c14b2b586036f40965c128aa4fee4dda5d3d51cb14ad54/aiohappyeyeballs-2.6.1.tar.gz"
@@ -297,8 +521,8 @@ class Mragent < Formula
   end
 
   resource "rich" do
-    url "https://files.pythonhosted.org/packages/74/99/a4cab2acbb884f80e558b0771e97e21e939c5dfb460f488d19df485e8298/rich-14.3.2.tar.gz"
-    sha256 "e712f11c1a562a11843306f5ed999475f09ac31ffb64281f73ab29ffdda8b3b8"
+    url "https://files.pythonhosted.org/packages/b3/c6/f3b320c27991c46f43ee9d856302c70dc2d0fb2dba4842ff739d5f46b393/rich-14.3.3.tar.gz"
+    sha256 "b8daa0b9e4eef54dd8cf7c86c03713f53241884e814f4e2f5fb342fe520f639b"
   end
 
   resource "rubicon-objc" do
@@ -367,8 +591,8 @@ class Mragent < Formula
   end
 
   resource "Werkzeug" do
-    url "https://files.pythonhosted.org/packages/5a/70/1469ef1d3542ae7c2c7b72bd5e3a4e6ee69d7978fa8a3af05a38eca5becf/werkzeug-3.1.5.tar.gz"
-    sha256 "6a548b0e88955dd07ccb25539d7d0cc97417ee9e179677d22c7041c8f078ce67"
+    url "https://files.pythonhosted.org/packages/61/f1/ee81806690a87dab5f5653c1f146c92bc066d7f4cebc603ef88eb9e13957/werkzeug-3.1.6.tar.gz"
+    sha256 "210c6bede5a420a913956b4791a7f4d6843a43b6fcee4dfa08a65e93007d0d25"
   end
 
   resource "yarl" do
@@ -378,7 +602,7 @@ class Mragent < Formula
 
   def install
      # Install dependencies into a virtualenv
-    virtualenv_create(libexec, "python3")
+    virtualenv_create(libexec, "python3.11")
     virtualenv_install_with_resources
     
     # Pip sometimes installs console scripts to site-packages/bin when using --target
