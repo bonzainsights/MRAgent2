@@ -380,6 +380,11 @@ class Mragent < Formula
      # Install dependencies into a virtualenv
     virtualenv_create(libexec, "python3")
     virtualenv_install_with_resources
+    
+    # Pip sometimes installs console scripts to site-packages/bin when using --target
+    if (libexec/"lib/python3.11/site-packages/bin/mragent").exist?
+      bin.install_symlink libexec/"lib/python3.11/site-packages/bin/mragent" => "mragent"
+    end
   end
 
   test do
