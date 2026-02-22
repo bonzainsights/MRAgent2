@@ -84,11 +84,10 @@ class NvidiaLLMProvider(LLMProvider):
         """
         # Define the parameter step-down chain
         fallback_chain = [
-            "gpt-oss-120b",
             "llama-3.3-70b",
-            "glm5",
             "kimi-k2.5",
             "qwen3-coder",
+            "llama-3.1-8b",
             "gemma-3n"
         ]
 

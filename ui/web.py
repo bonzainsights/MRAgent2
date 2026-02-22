@@ -1010,6 +1010,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
         <div class="input-wrapper">
           <textarea id="input" placeholder="Type your message... (Shift+Enter for new line)"
                     rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <label class="mic-btn" for="file-upload" title="Attach file" style="cursor: pointer; display: flex; align-items: center; justify-content: center;">📎</label>
+          <input type="file" id="file-upload" style="display: none;" onchange="handleFileUpload(event)" accept=".txt,.json,.xml,.csv,.md,.py,.js,.html,.css,.jsonl,.yaml,.yml">
           <button class="mic-btn" id="mic-btn" onclick="toggleRecording()" title="Hold to record">🎤</button>
           <button class="send-btn" id="sendBtn" onclick="handleSendClick()">➤</button>
         </div>
@@ -1290,6 +1292,21 @@ let stopRequested = false;
 
 const queueBar = document.getElementById('queueBar');
 const queueItems = document.getElementById('queueItems');
+
+// ── File Upload ──
+async function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const contents = e.target.result;
+    const currentVal = input.value;
+    input.value = currentVal + (currentVal ? '\n\n' : '') + `[Attached File: ${file.name}]\n\`\`\`\n${contents}\n\`\`\`\n`;
+    autoResize(input);
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
 
 // ── Handle send/stop button click ──
 function handleSendClick() {

@@ -65,6 +65,7 @@ NVIDIA_KEYS = {
     "gemma_3n":      os.getenv("NVIDIA_GEMMA_3N", NVIDIA_API_KEY),
     "qwen3_coder":   os.getenv("NVIDIA_QWEN3_CODER", NVIDIA_API_KEY),
     "llama_33_70b":  os.getenv("NVIDIA_LLAMA3_3_70B_INSTRUCT", NVIDIA_API_KEY),
+    "llama_31_8b":   os.getenv("NVIDIA_LLAMA3_1_8B_INSTRUCT", NVIDIA_API_KEY),
     "gpt_oss_120b":  os.getenv("NVIDIA_GPT_OSS_120B", NVIDIA_API_KEY),
     "llama_32_11b_vision": os.getenv("NVIDIA_LLAMA3_2_11B_VISION_INSTRUCT", NVIDIA_API_KEY),
     "groq_api_key":  os.getenv("GROQ_API_KEY", ""),
@@ -158,6 +159,16 @@ MODEL_REGISTRY = {
         "description": "Reliable fallback, strong general-purpose LLM",
     },
 
+    "llama-3.1-8b": {
+        "id": "meta/llama-3.1-8b-instruct",
+        "key": "llama_31_8b",
+        "type": "llm",
+        "categories": ["fast"],
+        "context_window": 128_000,
+        "supports_tools": True,
+        "description": "Fast & lightweight fallback",
+    },
+
     "gpt-oss-120b": {
         "id": "openai/gpt-oss-120b",
         "key": "gpt_oss_120b",
@@ -214,7 +225,7 @@ MODEL_REGISTRY = {
 # Default Settings
 # ──────────────────────────────────────────────
 DEFAULTS = {
-    "default_llm": "gpt-oss-120b",
+    "default_llm": "llama-3.3-70b",
     "default_image_model": "sd-3.5-large",
     "model_selection_mode": "auto",    # auto | thinking | fast | code
     "voice_enabled": False,

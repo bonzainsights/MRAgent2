@@ -20,11 +20,11 @@ logger = get_logger("agents.model_selector")
 
 # Default model for each mode (first pick when switching mode)
 MODE_DEFAULTS = {
-    "thinking": "gpt-oss-120b",
-    "fast": "gpt-oss-120b",
+    "thinking": "llama-3.3-70b",
+    "fast": "llama-3.3-70b",
     "code": "qwen3-coder",
-    "browsing": "gpt-oss-120b",
-    "general": "gpt-oss-120b",
+    "browsing": "llama-3.3-70b",
+    "general": "llama-3.3-70b",
 }
 
 # Keyword patterns for auto-classification
