@@ -277,9 +277,47 @@ class AgentCore:
 
             # Execute the tool with Human-in-the-Loop check
             result = None
-            if func_name in ["execute_terminal", "run_code"]:
+            
+            # Helper to check if a terminal command is safe for auto-execution
+            def is_safe_command(cmd: str) -> bool:
+                if not cmd:
+                    return False
+                # Unsafe operators: chaining or redirecting
+                unsafe_patterns = ['&&', '||', ';', '|', '>', '<', '`', '$(']
+                for p in unsafe_patterns:
+                    if p in cmd:
+                        return False
+                        
+                # Extract base command
+                base_cmd = cmd.strip().split()[0] if cmd.strip() else ""
+                
+                # Whitelisted safe read-only commands
+                safe_cmds = {
+                    'ls', 'pwd', 'echo', 'cat', 'git status', 'git log', 'git diff',
+                    'grep', 'find', 'which', 'whoami', 'date', 'tree', 'head', 'tail', 'less'
+                }
+                
+                # Check for two-word safe commands like git status
+                if len(cmd.split()) >= 2:
+                    two_word_cmd = " ".join(cmd.split()[:2])
+                    if two_word_cmd in safe_cmds:
+                        return True
+                        
+                return base_cmd in safe_cmds
+
+            if func_name == "execute_terminal":
+                cmd_to_run = func_args.get("command", "")
+                if not is_safe_command(cmd_to_run):
+                    if self.approval_callback:
+                        tool_desc = f"⚠️ Agent wants to run an unsafe command:\n```bash\n{cmd_to_run}\n```"
+                        self._emit("approval_required", tool_desc)
+                        approved = self.approval_callback(tool_desc)
+                        if not approved:
+                            result = "❌ Execution rejected by user."
+            
+            elif func_name == "run_code":
                 if self.approval_callback:
-                    tool_desc = f"Agent wants to run {func_name} with arguments:\n{json.dumps(func_args, indent=2)}"
+                    tool_desc = f"⚠️ Agent wants to run code:\n```python\n{func_args.get('code', '')[:200]}...\n```"
                     self._emit("approval_required", tool_desc)
                     approved = self.approval_callback(tool_desc)
                     if not approved:
