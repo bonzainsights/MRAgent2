@@ -64,6 +64,7 @@ NVIDIA_KEYS = {
     "magpie_tts":    os.getenv("NVIDIA_MAGPIE_TTS", NVIDIA_API_KEY),
     "gemma_3n":      os.getenv("NVIDIA_GEMMA_3N", NVIDIA_API_KEY),
     "qwen3_coder":   os.getenv("NVIDIA_QWEN3_CODER", NVIDIA_API_KEY),
+    "qwen3_235b":    os.getenv("NVIDIA_QWEN3_235B", NVIDIA_API_KEY),
     "llama_33_70b":  os.getenv("NVIDIA_LLAMA3_3_70B_INSTRUCT", NVIDIA_API_KEY),
     "llama_31_8b":   os.getenv("NVIDIA_LLAMA3_1_8B_INSTRUCT", NVIDIA_API_KEY),
     "gpt_oss_120b":  os.getenv("NVIDIA_GPT_OSS_120B", NVIDIA_API_KEY),
@@ -139,13 +140,23 @@ MODEL_REGISTRY = {
 
     # ── Code ──
     "qwen3-coder": {
-        "id": "qwen/qwen3-coder-480b-a35b-instruct",
+        "id": "qwen3-coder-480b-a35b-instruct",
         "key": "qwen3_coder",
         "type": "llm",
         "categories": ["code"],
         "context_window": 262_144,
         "supports_tools": True,
-        "description": "480B MoE agentic coder, 1M context (default code)",
+        "description": "480B MoE agentic coder, 1M context",
+    },
+
+    "qwen3-235b": {
+        "id": "qwen3-235b-a22b",
+        "key": "qwen3_235b",
+        "type": "llm",
+        "categories": ["thinking", "code"],
+        "context_window": 128_000,
+        "supports_tools": True,
+        "description": "Advanced reasoning & agentic coding",
     },
 
     # ── Fallback ──
