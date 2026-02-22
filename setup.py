@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="bonza-mragent",
-    version="0.1.8",
+    version="0.1.9",
     description="A lightweight, open-source AI Agent powered by free APIs",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
@@ -28,6 +28,7 @@ setup(
         "edge-tts>=7.0.0",
         "croniter>=3.0.0",
         "schedule>=1.2.0",
+        "PyPDF2>=3.0.0"
     ],
     entry_points={
         "console_scripts": [
