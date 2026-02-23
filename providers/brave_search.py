@@ -114,6 +114,11 @@ class BraveSearchProvider(SearchProvider):
                 lines.append(f"   *{r['age']}*")
             lines.append("")
 
+        # Add Sources section for easy reference
+        lines.append("## Sources")
+        for i, r in enumerate(results, 1):
+            lines.append(f"[{i}] [{r.get('title', 'Untitled')}]({r.get('url', '#')})")
+
         return "\n".join(lines)
 
     @property

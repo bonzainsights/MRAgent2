@@ -124,7 +124,12 @@ class LangSearchProvider(SearchProvider):
             if age:
                 lines.append(f"   *{age}*")
             lines.append("")
-        
+
+        # Add Sources section for easy reference
+        lines.append("## Sources")
+        for i, r in enumerate(results, 1):
+            lines.append(f"[{i}] [{r.get('title', 'Untitled')}]({r.get('url', '#')})")
+
         formatted = "\n".join(lines)
         self.logger.debug(f"Formatted output ({len(formatted)} chars):\n{formatted[:200]}...")
         return formatted
