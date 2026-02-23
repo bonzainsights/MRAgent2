@@ -63,7 +63,9 @@ class GoogleImageProvider(ImageProvider):
         except ImportError:
             raise ImportError("google-genai not installed. Install with: pip install google-genai")
 
-        target_model = model or GOOGLE_IMAGE_MODEL
+        # Ignore NVIDIA-specific model names — always use our Gemini model
+        _nvidia_models = {"flux-dev", "sd-3-medium"}
+        target_model = GOOGLE_IMAGE_MODEL if (not model or model in _nvidia_models) else model
         self.logger.info(f"Generating image via Google: model={target_model}, prompt='{prompt[:60]}...'")
         start_time = time.time()
 
