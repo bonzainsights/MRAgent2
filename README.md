@@ -115,6 +115,11 @@ MRAgent/
 
 - **Python 3.10+**
 - Free API keys (see [API Providers](#api-providers))
+- <a href="https://build.nvidia.com/models">Nvidia</a>
+- <a href="https://groq.com">Groq</a>
+- <a href="https://brave.com/search/api/">Brave</a> `you can just use langsearch but brave gives better results`
+- <a href="https://langsearch.com">LangSearch</a>
+- <a href="https://agentmail.to">AgentMail</a>
 
 ### Installation
 
