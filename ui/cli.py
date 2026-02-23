@@ -25,6 +25,7 @@ COMMANDS = {
     "/image":    "Generate an image (e.g. /image sunset over mountains)",
     "/search":   "Search the web (e.g. /search python async)",
     "/screen":   "Capture and analyze the screen",
+    "/guide":    "Screen guidance — see your screen and help (e.g. /guide how do I fix this?)",
     "/history":  "Show recent chat history",
     "/stats":    "Show agent statistics",
     "/clear":    "Clear the screen",
@@ -306,6 +307,9 @@ class CLIInterface:
 
         elif command == "/screen":
             self._capture_screen()
+
+        elif command == "/guide":
+            self._guide_screen(arg)
 
         elif command == "/history":
             self._show_history()
@@ -609,11 +613,26 @@ class CLIInterface:
             return self._get_input_clean(prompt)
 
     def _capture_screen(self):
-        """Capture and analyze the screen."""
-        self._print_info("📸 Capturing screen...")
-        response = self.agent.chat("Please capture my screen and describe what you see.", stream=True)
-        if not self._current_response:
-            self._print_response(response)
+        """Capture and analyze the screen using the vision model."""
+        self._print_info("📸 Capturing and analyzing screen...")
+        try:
+            analysis = self.agent.analyze_screen()
+            self._print_response(analysis)
+        except Exception as e:
+            self._print_info(f"❌ Screen analysis failed: {e}")
+
+    def _guide_screen(self, question: str = ""):
+        """Capture screen and provide guidance, optionally for a specific question."""
+        if question:
+            self._print_info(f"📸 Analyzing screen for: {question}")
+        else:
+            self._print_info("📸 Analyzing screen for guidance...")
+
+        try:
+            analysis = self.agent.analyze_screen(user_question=question or None)
+            self._print_response(analysis)
+        except Exception as e:
+            self._print_info(f"❌ Screen guidance failed: {e}")
 
     def _show_history(self):
         """Show recent chats."""

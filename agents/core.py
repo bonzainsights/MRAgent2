@@ -450,3 +450,64 @@ class AgentCore:
             "tools": self.tool_registry.count,
             "context": self.context_manager.get_stats(),
         }
+
+    def analyze_screen(self, user_question: str = None) -> str:
+        """
+        Capture the screen and analyze it with the vision model.
+
+        Args:
+            user_question: Optional specific question about the screen.
+                           If None, gives a general description and guidance.
+
+        Returns:
+            Text analysis/guidance from the vision model.
+        """
+        from tools.screen import ScreenCaptureTool
+        from providers import get_llm
+
+        screen_tool = ScreenCaptureTool()
+        llm = get_llm()
+
+        # Capture high-quality screenshot
+        b64_image = screen_tool.capture_as_base64(quality=80, resize_factor=0.8)
+        if not b64_image:
+            return "❌ Failed to capture screen. Make sure pyautogui is installed."
+
+        # Build the prompt
+        if user_question:
+            prompt_text = (
+                f"The user is looking at their screen and needs help. "
+                f"Their question: {user_question}\n\n"
+                f"Analyze the screenshot and provide clear, actionable guidance."
+            )
+        else:
+            prompt_text = (
+                "Analyze this screenshot and describe what you see. "
+                "If you notice any errors, issues, or anything the user might need help with, "
+                "provide specific guidance on how to fix or proceed."
+            )
+
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt_text},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/jpeg;base64,{b64_image}"}
+                    }
+                ]
+            }
+        ]
+
+        try:
+            response = llm.chat(
+                messages=messages,
+                model="llama-3.2-11b-vision",
+                stream=False,
+                max_tokens=500,
+            )
+            return response.get("content", "No analysis available.")
+        except Exception as e:
+            logger.error(f"Screen analysis failed: {e}")
+            return f"❌ Screen analysis failed: {e}"
