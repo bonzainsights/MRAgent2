@@ -117,6 +117,7 @@ MRAgent/
 - Free API keys (see [API Providers](#api-providers))
 - <a href="https://build.nvidia.com/models">Nvidia</a>
 - <a href="https://groq.com">Groq</a>
+- <a href="https://aistudio.google.com">Google AI Studio</a> `for image generation !!no card connection needed & there is daily limit once limit reached fallback to Flux/SD3.5`
 - <a href="https://brave.com/search/api/">Brave</a> `you can just use langsearch but brave gives better results`
 - <a href="https://langsearch.com">LangSearch</a>
 - <a href="https://agentmail.to">AgentMail</a>
