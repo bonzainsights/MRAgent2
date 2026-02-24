@@ -34,9 +34,29 @@ logger = get_logger("main")
 
 
 # ──────────────────────────────────────────────
-# Version
+# Version — single source of truth is setup.py
 # ──────────────────────────────────────────────
-__version__ = "0.2.0"
+def _get_version() -> str:
+    """Read version from installed package metadata, falling back to setup.py."""
+    # 1. Try installed package metadata (works after pip install)
+    try:
+        from importlib.metadata import version
+        return version("bonza-mragent")
+    except Exception:
+        pass
+    # 2. Fallback: parse setup.py directly (works during development)
+    try:
+        import re
+        setup_py = Path(__file__).parent / "setup.py"
+        text = setup_py.read_text(encoding="utf-8")
+        match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', text)
+        if match:
+            return match.group(1)
+    except Exception:
+        pass
+    return "0.0.0"
+
+__version__ = _get_version()
 
 
 
