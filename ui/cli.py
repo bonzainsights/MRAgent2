@@ -28,6 +28,7 @@ COMMANDS = {
     "/guide":    "Screen guidance — see your screen and help (e.g. /guide how do I fix this?)",
     "/history":  "Show recent chat history",
     "/stats":    "Show agent statistics",
+    "/status":   "Show active config (model, providers, trust level)",
     "/clear":    "Clear the screen",
     "/skills":   "Configure API skills (Telegram, AgentMail...)",
     "/email":    "Send an email interactively",
@@ -281,8 +282,9 @@ class CLIInterface:
 
         elif command == "/image":
             if arg:
-                # Parse optional --model flag
+                # Parse optional --model flag and aspect ratio
                 model = "flux-dev"
+                aspect = "1:1"
                 prompt = arg
                 if arg.startswith("--sd "):
                     model = "sd-3-medium"
@@ -290,14 +292,23 @@ class CLIInterface:
                 elif arg.startswith("--flux "):
                     model = "flux-dev"
                     prompt = arg[7:].strip()
+                # Parse --wide, --tall, --portrait shortcuts
+                if "--wide" in prompt:
+                    aspect = "16:9"
+                    prompt = prompt.replace("--wide", "").strip()
+                elif "--tall" in prompt or "--portrait" in prompt:
+                    aspect = "9:16"
+                    prompt = prompt.replace("--tall", "").replace("--portrait", "").strip()
                 if prompt:
-                    self._generate_image(prompt, model=model)
+                    self._generate_image(prompt, model=model, aspect_ratio=aspect)
                 else:
-                    self._print_info("Usage: /image [--flux|--sd] <description>")
+                    self._print_info("Usage: /image [--flux|--sd] [--wide|--tall] <description>")
             else:
-                self._print_info("Usage: /image [--flux|--sd] <description>")
-                self._print_info("  --flux  FLUX.1-dev (default, best quality)")
+                self._print_info("Usage: /image [--flux|--sd] [--wide|--tall] <description>")
+                self._print_info("  --flux  FLUX.1-dev (default)")
                 self._print_info("  --sd    Stable Diffusion 3 Medium")
+                self._print_info("  --wide  16:9 landscape")
+                self._print_info("  --tall  9:16 portrait")
 
         elif command == "/search":
             if arg:
@@ -317,11 +328,17 @@ class CLIInterface:
         elif command == "/stats":
             self._show_stats()
 
+        elif command == "/status":
+            self._show_status()
+
         elif command == "/clear":
             print("\033[2J\033[H", end="")  # ANSI clear
 
         elif command == "/identity":
             self._configure_identity()
+
+        elif command == "/email":
+            self._send_email_interactive()
 
         elif command == "/skills":
             self._configure_skills()
@@ -410,15 +427,21 @@ class CLIInterface:
             self._print_info(f"Selection failed: {e}")
             return None
 
-    def _generate_image(self, prompt: str, model: str = "flux-dev"):
-        """Generate an image via the agent."""
-        self._print_info(f"🎨 Generating image with {model}: {prompt}")
+    def _generate_image(self, prompt: str, model: str = "flux-dev", aspect_ratio: str = "1:1"):
+        """Generate an image using the tool's full pipeline (enhancement + fallback)."""
+        self._print_info(f"🎨 Generating image with {model} ({aspect_ratio}): {prompt}")
         try:
-            from providers import get_image
-            from agents.prompt_enhancer import PromptEnhancer
-            enhanced = PromptEnhancer().build_image_prompt(prompt)
-            result = get_image().generate_image(enhanced, model=model)
-            self._print_info(f"✅ Image saved: {result['filepath']}")
+            tool = self.agent.tool_registry.get("generate_image")
+            if tool:
+                result = tool.execute(prompt=prompt, aspect_ratio=aspect_ratio)
+                self._print_info(result)
+            else:
+                # Fallback to direct provider call
+                from providers import get_image
+                from agents.prompt_enhancer import PromptEnhancer
+                enhanced = PromptEnhancer().build_image_prompt(prompt)
+                result = get_image().generate_image(enhanced, model=model, aspect_ratio=aspect_ratio)
+                self._print_info(f"✅ Image saved: {result['filepath']}")
         except Exception as e:
             self._print_info(f"❌ Image generation failed: {e}")
 
@@ -432,12 +455,91 @@ class CLIInterface:
         except Exception as e:
             self._print_info(f"❌ Search failed: {e}")
 
+    def _show_status(self):
+        """Show all active configuration at a glance."""
+        import os
+        from config.settings import AUTONOMY_SETTINGS, AGENT_NAME, USER_NAME
+
+        trust = AUTONOMY_SETTINGS.get('trust_level', 'balanced')
+        trust_icons = {'cautious': '🔒', 'balanced': '⚖️', 'autonomous': '⚡'}
+
+        model = self._last_model or 'auto'
+        mode = self.agent.model_selector.mode
+        override = self.agent.model_override or 'none'
+
+        image_provider = os.getenv('IMAGE_PROVIDER', 'flux').lower()
+        if image_provider == 'google' and os.getenv('GOOGLE_AI_STUDIO_KEY'):
+            image_str = 'Google AI Studio'
+        else:
+            image_str = 'NVIDIA FLUX'
+
+        search_provider = os.getenv('SEARCH_PROVIDER', 'brave')
+
+        self._print_info("\n📋 MRAgent Status")
+        print(f"  Identity:       {USER_NAME} ↔ {AGENT_NAME}")
+        print(f"  Model:          {model} (mode: {mode}, override: {override})")
+        print(f"  Image Provider: {image_str}")
+        print(f"  Search:         {search_provider}")
+        print(f"  Trust Level:    {trust_icons.get(trust, '❓')} {trust}")
+        print(f"  Web Port:       {os.getenv('PORT', '16226')}")
+        print(f"  Voice:          {'ON' if self.voice_enabled else 'OFF'}")
+
+        # Show key status
+        has_nvidia = bool(os.getenv('NVIDIA_API_KEY'))
+        has_groq = bool(os.getenv('GROQ_API_KEY'))
+        has_telegram = bool(os.getenv('TELEGRAM_BOT_TOKEN'))
+        has_agentmail = bool(os.getenv('AGENTMAIL_API_KEY'))
+        print(f"  API Keys:       NVIDIA {'✅' if has_nvidia else '❌'} | Groq {'✅' if has_groq else '❌'} | Telegram {'✅' if has_telegram else '❌'} | AgentMail {'✅' if has_agentmail else '❌'}")
+        print()
+
+    def _send_email_interactive(self):
+        """Interactive email sending via AgentMail."""
+        try:
+            import os
+            if not os.getenv('AGENTMAIL_API_KEY'):
+                self._print_info("❌ AgentMail not configured. Run /skills → AgentMail to set up.")
+                return
+
+            to_addr = self._get_input_clean("To: ").strip()
+            if not to_addr:
+                self._print_info("Cancelled.")
+                return
+
+            subject = self._get_input_clean("Subject: ").strip()
+            if not subject:
+                subject = "(no subject)"
+
+            self._print_info("Enter message body (press Enter twice to send):")
+            body_lines = []
+            while True:
+                line = self._get_input_clean("")
+                if line == "" and body_lines and body_lines[-1] == "":
+                    break
+                body_lines.append(line)
+            body = "\n".join(body_lines).strip()
+
+            if not body:
+                self._print_info("Cancelled (empty body).")
+                return
+
+            self._print_info(f"📧 Sending to {to_addr}...")
+
+            from skills.agentmail import SendEmailTool
+            tool = SendEmailTool()
+            result = tool.execute(to=to_addr, subject=subject, body=body)
+            self._print_info(result)
+
+        except ImportError:
+            self._print_info("❌ AgentMail skill not found.")
+        except Exception as e:
+            self._print_info(f"❌ Failed to send email: {e}")
+
     def _configure_skills(self):
         """Interactive skills configuration."""
         self._print_info("\n🧩 Skills Configuration")
         
         choices = [
-            {"id": "search", "label": "Search Provider    [dim](Google/Brave)[/dim]"},
+            {"id": "search", "label": "Search Provider    [dim](Brave/Google/LangSearch)[/dim]"},
             {"id": "google_image", "label": "Google AI Studio   [dim](Image Generation)[/dim]"},
             {"id": "telegram", "label": "Telegram Bot       [dim](@BotFather)[/dim]"},
             {"id": "agentmail", "label": "AgentMail          [dim](Email via API)[/dim]"},

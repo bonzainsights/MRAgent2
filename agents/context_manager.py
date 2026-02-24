@@ -16,8 +16,10 @@ CONTEXT_WINDOWS = {
     "glm5": 128_000,
     "gemma-3n": 32_000,
     "qwen3-coder": 262_144,
+    "qwen3-235b": 128_000,
     "llama-3.3-70b": 128_000,
-    "gpt-oss-120b": 128_000,  # Explicitly defined
+    "llama-3.1-8b": 128_000,
+    "gpt-oss-120b": 128_000,
 }
 
 DEFAULT_CONTEXT_WINDOW = 32_000

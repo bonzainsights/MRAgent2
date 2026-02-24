@@ -124,8 +124,6 @@ MRAgent/
 
 ### Installation
 
-### Installation
-
 #### **One-Line Installer (Recommended)**
 
 **Mac/Linux:**

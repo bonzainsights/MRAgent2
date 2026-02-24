@@ -353,8 +353,8 @@ def create_app() -> Flask:
             
             transcript = stt.speech_to_text(audio_bytes)
             
-            # Chat with agent (blocking for now)
-            response = _agent.chat(transcript, stream=False)
+            # Chat with agent
+            response = _agent.chat(transcript, stream=True)
             _chat_store.save_message(_agent.chat_id, "user", transcript)
             _chat_store.save_message(_agent.chat_id, "assistant", response)
 

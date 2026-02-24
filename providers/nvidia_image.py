@@ -46,7 +46,8 @@ class NvidiaImageProvider(ImageProvider):
         self.logger.info("NVIDIA Image provider initialized")
 
     def generate_image(self, prompt: str, model: str = "flux-dev",
-                       width: int = 1024, height: int = 1024,
+                       width: int = None, height: int = None,
+                       aspect_ratio: str = "1:1",
                        steps: int = 50, cfg_scale: float = 5.0,
                        seed: int = 0, negative_prompt: str = "") -> dict:
         """
@@ -55,7 +56,8 @@ class NvidiaImageProvider(ImageProvider):
         Args:
             prompt: Text description of the desired image
             model: "sd-3-medium" or "flux-dev" (default: flux-dev)
-            width/height: Image dimensions (for flux-dev only)
+            width/height: Image dimensions (for flux-dev; auto-calculated from aspect_ratio if not set)
+            aspect_ratio: Aspect ratio string (1:1, 4:3, 3:4, 16:9, 9:16)
             steps: Diffusion steps (more = higher quality, slower)
             cfg_scale: How closely to follow the prompt (1-20)
             seed: Random seed (0 = random)
@@ -79,14 +81,25 @@ class NvidiaImageProvider(ImageProvider):
         start_time = time.time()
 
         def _make_request():
+            # Convert aspect_ratio to actual dimensions for FLUX
+            aspect_dimensions = {
+                "1:1":  (1024, 1024),
+                "4:3":  (1024, 768),
+                "3:4":  (768, 1024),
+                "16:9": (1024, 576),
+                "9:16": (576, 1024),
+            }
+            img_w = width or aspect_dimensions.get(aspect_ratio, (1024, 1024))[0]
+            img_h = height or aspect_dimensions.get(aspect_ratio, (1024, 1024))[1]
+
             # Build payload based on model format
             if model_info["payload_format"] == "flux":
                 payload = {
                     "prompt": prompt,
                     "mode": "base",
                     "cfg_scale": cfg_scale,
-                    "width": width,
-                    "height": height,
+                    "width": img_w,
+                    "height": img_h,
                     "steps": steps,
                     "seed": seed,
                 }
@@ -94,7 +107,7 @@ class NvidiaImageProvider(ImageProvider):
                 payload = {
                     "prompt": prompt,
                     "cfg_scale": cfg_scale,
-                    "aspect_ratio": "16:9",
+                    "aspect_ratio": aspect_ratio,
                     "steps": steps,
                     "seed": seed,
                     "negative_prompt": negative_prompt or "",
