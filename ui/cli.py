@@ -485,6 +485,12 @@ class CLIInterface:
         print(f"  Image Provider: {image_str}")
         print(f"  Search:         {search_provider}")
         print(f"  Trust Level:    {trust_icons.get(trust, '❓')} {trust}")
+        # Show /auto mode status
+        if AUTONOMY_SETTINGS.get("auto_session_active"):
+            auto_dir = AUTONOMY_SETTINGS.get("auto_directory", "")
+            print(f"  Auto Mode:      🟢 ACTIVE → {auto_dir}")
+        else:
+            print(f"  Auto Mode:      🔴 OFF")
         print(f"  Web Port:       {os.getenv('PORT', '16226')}")
         print(f"  Voice:          {'ON' if self.voice_enabled else 'OFF'}")
 

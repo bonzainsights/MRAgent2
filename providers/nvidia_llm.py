@@ -40,6 +40,7 @@ class NvidiaLLMProvider(LLMProvider):
             self._clients[api_key] = OpenAI(
                 base_url=NVIDIA_BASE_URL,
                 api_key=api_key,
+                timeout=60.0,  # 60s timeout — prevents hanging on cold/queued models
             )
             self.logger.debug(f"Created OpenAI client for model: {model_name}")
 

@@ -89,13 +89,6 @@ class VivreCard(threading.Thread):
         try:
             if job_type == "log":
                 logger.info(f"[VivreCard] {payload}")
-                
-                # Only print to stdout every 2 hours (7200 seconds) to reduce noise
-                # But always print if it's the first time
-                last_time = self.last_echo.get(job_id, 0)
-                if time.time() - last_time >= 7200:
-                    print(f"\n[VivreCard] {payload}\n")
-                    self.last_echo[job_id] = time.time()
 
             elif job_type == "shell":
                 import subprocess

@@ -114,43 +114,57 @@ class ModelSelector:
             self.logger.info(f"Classified as 'image' internally due to Attached Image tag")
             return self.get_default_for_mode("image")
 
-        # 1. Try Smart LLM Classification first
+        # 1. Regex classification FIRST (instant, no API call)
+        scores = {k: 0 for k in PATTERNS.keys()}
+
+        for category, patterns in PATTERNS.items():
+            for pattern in patterns:
+                matches = re.findall(pattern, message_lower)
+                scores[category] += len(matches)
+
+        best_category = max(scores, key=scores.get)
+        best_score = scores[best_category]
+
+        if best_score > 0:
+            model = MODE_DEFAULTS[best_category]
+            self.logger.info(
+                f"Classified as '{best_category}' (scores: {scores}), model: {model}"
+            )
+            return model
+
+        # 2. No regex match — try LLM classification as fallback (with strict timeout)
         try:
             from openai import OpenAI
             from config.settings import NVIDIA_KEYS, NVIDIA_BASE_URL
             
             api_key = NVIDIA_KEYS.get("llama_33_70b") or NVIDIA_KEYS.get("gpt_oss_120b")
             if api_key:
-                client = OpenAI(base_url=NVIDIA_BASE_URL, api_key=api_key)
+                client = OpenAI(
+                    base_url=NVIDIA_BASE_URL,
+                    api_key=api_key,
+                    timeout=5.0,  # Hard 5s timeout on the client itself
+                )
                 
-                # Concise classification prompt
-                # Note: We map output categories to our internal modes
-                # BROWSING -> browsing (Llama 70b)
-                # CODING -> code (Qwen)
-                # THINKING -> thinking (GPT 120b)
-                # FAST -> fast (Gemma)
                 prompt = (
                     "Classify this user query into exactly one category:\n"
-                    "- BROWSING: for news, search, real-time info, weather, time, facts, web urls (e.g. 'what time is it', 'latest news')\n"
+                    "- BROWSING: for news, search, real-time info, weather, time, facts, web urls\n"
                     "- CODING: for programming, debugging, scripts, data formats\n"
                     "- THINKING: for complex reasoning, planning, analysis, creative writing\n"
-                    "- FAST: for simple greetings, chatter, quick translations, short questions (e.g. 'hi', 'thanks')\n\n"
-                    f"Query: \"{message}\"\n"
+                    "- FAST: for simple greetings, chatter, quick translations, short questions\n\n"
+                    f"Query: \"{message[:200]}\"\n"
                     "Category (return ONLY the word):"
                 )
 
                 response = client.chat.completions.create(
-                    model="meta/llama-3.3-70b-instruct",  # Use Llama 3.3 70B for smarter routing
+                    model="meta/llama-3.3-70b-instruct",
                     messages=[{"role": "user", "content": prompt}],
                     max_tokens=10,
                     temperature=0.0,
-                    timeout=3.0 # Slightly higher timeout for larger model
                 )
                 
                 category_raw = response.choices[0].message.content.strip().upper()
-                self.logger.debug(f"Smart Classifier output: {category_raw}")
+                self.logger.debug(f"LLM Classifier output: {category_raw}")
                 
-                # Map Router output to modes
                 router_map = {
                     "BROWSING": "browsing",
                     "CODING": "code",
@@ -158,40 +172,18 @@ class ModelSelector:
                     "FAST": "fast"
                 }
 
-                # Robust matching (e.g. if model says "Category: BROWSING")
                 for key, mode in router_map.items():
                     if key in category_raw:
                         model = MODE_DEFAULTS[mode]
-                        self.logger.info(f"Router decided: {key} → {model}")
+                        self.logger.info(f"LLM Router decided: {key} → {model}")
                         return model
 
         except Exception as e:
-            self.logger.warning(f"Smart classification failed ({e}), falling back to pattern matching.")
+            self.logger.warning(f"LLM classification failed ({e}), using default model.")
 
-        # 2. Fallback to Regex (legacy logic)
-        msg_lower = message.lower()
-        # Initialize scores for all defined categories
-        scores = {k: 0 for k in PATTERNS.keys()}
-
-        for category, patterns in PATTERNS.items():
-            for pattern in patterns:
-                matches = re.findall(pattern, msg_lower)
-                scores[category] += len(matches)
-
-        # Get the category with highest score
-        best_category = max(scores, key=scores.get)
-        best_score = scores[best_category]
-
-        # If no clear signal, default to general model
-        if best_score == 0:
-            model = MODE_DEFAULTS["general"]
-            self.logger.debug(f"No pattern match, defaulting to: {model}")
-        else:
-            model = MODE_DEFAULTS[best_category]
-            self.logger.debug(
-                f"Classified as '{best_category}' (scores: {scores}), model: {model}"
-            )
-        
+        # 3. Absolute fallback
+        model = MODE_DEFAULTS["general"]
+        self.logger.debug(f"No classification signal, defaulting to: {model}")
         return model
 
     def set_mode(self, mode: str):

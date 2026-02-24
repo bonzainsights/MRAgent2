@@ -25,7 +25,7 @@ from utils.helpers import generate_id
 
 logger = get_logger("agents.core")
 
-MAX_TOOL_ITERATIONS = 10  # Safety: max tool call rounds per turn
+MAX_TOOL_ITERATIONS = 25  # Allow enough rounds for full project builds
 
 
 class AgentCore:
@@ -339,20 +339,35 @@ class AgentCore:
                     if d in cmd_lower:
                         return False
 
-                # Resolve working directory — must be within the auto scope
                 import os
-                resolved_cwd = os.path.abspath(working_dir) if working_dir else os.getcwd()
+                import re as _re
                 auto_dir_resolved = os.path.abspath(auto_dir)
 
+                # Extract effective working directory
+                # Handle compound commands: "cd /path && cmd" or "cd /path; cmd"
+                resolved_cwd = os.path.abspath(working_dir) if working_dir else os.getcwd()
+                parts = _re.split(r'&&|;', cmd)
+                for part in parts:
+                    part = part.strip()
+                    if part.startswith('cd '):
+                        cd_target = part[3:].strip().strip('"').strip("'")
+                        if os.path.isabs(cd_target):
+                            resolved_cwd = os.path.abspath(cd_target)
+                        elif cd_target.startswith('~'):
+                            resolved_cwd = os.path.abspath(os.path.expanduser(cd_target))
+                        else:
+                            resolved_cwd = os.path.abspath(os.path.join(resolved_cwd, cd_target))
+
+                # Working directory must be within the auto scope
                 if not resolved_cwd.startswith(auto_dir_resolved):
                     return False
 
                 # Check if command references absolute paths outside the scope
-                # Simple heuristic: look for absolute paths in the command
-                import re as _re
                 abs_paths = _re.findall(r'(?:^|\s)(/[^\s]+)', cmd)
                 for p in abs_paths:
-                    if not os.path.abspath(p).startswith(auto_dir_resolved):
+                    resolved_p = os.path.abspath(p)
+                    # Allow paths within scope
+                    if not resolved_p.startswith(auto_dir_resolved):
                         return False
 
                 return True
@@ -414,6 +429,9 @@ class AgentCore:
 
             self._emit("tool_result", f"✅ {func_name}: {result[:200]}")
 
+            # Log to project directory if /auto is active
+            self._log_to_project(func_name, func_args, result)
+
             # Add tool result to context
             tool_msg = {
                 "role": "tool",
@@ -423,6 +441,52 @@ class AgentCore:
             self.context_manager.add_message(tool_msg)
 
         logger.info(f"Executed {len(tool_calls)} tool call(s) [trust={trust_level}]")
+
+    def _log_to_project(self, tool_name: str, tool_args: dict, result: str):
+        """Log tool actions to .mragent/log.md in the auto directory for debugging."""
+        from config.settings import AUTONOMY_SETTINGS
+        if not AUTONOMY_SETTINGS.get("auto_session_active"):
+            return
+        auto_dir = AUTONOMY_SETTINGS.get("auto_directory")
+        if not auto_dir:
+            return
+
+        try:
+            from datetime import datetime
+            log_dir = Path(auto_dir) / ".mragent"
+            log_dir.mkdir(exist_ok=True)
+            log_file = log_dir / "log.md"
+
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            # Format args concisely
+            if tool_name == "execute_terminal":
+                args_display = tool_args.get("command", "")
+            elif tool_name == "write_file":
+                args_display = f"path={tool_args.get('path', '')}, {len(tool_args.get('content', ''))} chars"
+            else:
+                args_display = str(tool_args)[:200]
+
+            # Truncate result for log
+            result_preview = result[:500] if result else "(no output)"
+
+            entry = (
+                f"\n### {timestamp} — `{tool_name}`\n"
+                f"**Args**: `{args_display}`\n"
+                f"**Result**: {result_preview}\n"
+                f"---\n"
+            )
+
+            # Write header if new file
+            if not log_file.exists():
+                with open(log_file, "w") as f:
+                    f.write(f"# MRAgent Project Log\n\nAuto-generated action log for `{auto_dir}`\n\n---\n")
+
+            with open(log_file, "a") as f:
+                f.write(entry)
+
+        except Exception as e:
+            logger.debug(f"Project log write failed: {e}")
 
     def _notify_pending_approval(self, tool_name: str, command: str):
         """Send a Telegram notification when an approval is pending (balanced mode)."""
