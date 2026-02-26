@@ -155,24 +155,29 @@ pip install bonza-mragent
 mragent
 ```
 
-> ⚠️ **`mragent` not found after pip install?** Pip places the `mragent` script in a folder that may not be on your PATH. Run the fix for your OS:
+> ⚠️ **`mragent` not found after pip install?**
 >
-> **macOS/Linux** — add `~/.local/bin` to PATH:
+> **Instant workaround (all platforms):**
+>
+> ```bash
+> python -m bonza_mragent
+> ```
+>
+> **Permanent fix — macOS/Linux** (add `~/.local/bin` to PATH):
 >
 > ```bash
 > echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
 > ```
 >
-> **Windows** — add Python Scripts to PATH (run in PowerShell as Admin):
+> **Permanent fix — Windows PowerShell** (find and add the Scripts folder to PATH):
 >
 > ```powershell
-> $scripts = [System.IO.Path]::Combine($env:APPDATA, "Python", "Python" + $PSVersionTable.PSVersion.Major * 100, "Scripts")
-> [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";" + $scripts, "User")
+> python -c "import sysconfig; print(sysconfig.get_path('scripts', 'nt_user'))"
+> # Copy the output path, then add it permanently:
+> [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\paste\the\path\here", "User")
 > ```
 >
 > Then **restart your terminal** and type `mragent`.
->
-> Alternatively, run `pip show bonza-mragent` to find the `Location`, then add `<Location>/../Scripts` (Windows) or `<Location>/../../../bin` (macOS) to your PATH.
 
 #### **Homebrew (macOS)**
 
