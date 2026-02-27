@@ -77,6 +77,7 @@ MRAgent/
 │   └── telegram.py       # Telegram skill
 ├── providers/
 │   ├── nvidia_llm.py     # NVIDIA LLM (GPT-OSS, Kimi, GLM, Qwen)
+│   ├── deepseek_llm.py   # DeepSeek LLM (V3 & R1 — Free API)
 │   ├── nvidia_image.py   # Image generation (SD 3.5, FLUX)
 │   ├── tts.py            # Edge TTS
 │   ├── nvidia_stt.py     # Groq STT
@@ -121,6 +122,7 @@ MRAgent/
 - <a href="https://brave.com/search/api/">Brave</a> `you can just use langsearch but brave gives better results`
 - <a href="https://langsearch.com">LangSearch</a>
 - <a href="https://agentmail.to">AgentMail</a>
+- <a href="https://platform.deepseek.com">DeepSeek</a> `free API — generous free credits for both V3 and R1`
 
 ### Installation
 
@@ -248,6 +250,16 @@ MRAgent is built around **free-tier APIs** to keep costs at zero. Here are the c
 | **Google Search** | Web search          | Custom Search JSON API (Free) |
 | **LangSearch**    | Web search          | LangSearch API (Free)         |
 | **Telegram**      | Messaging Interface | Telegram Bot API (Free)       |
+
+### DeepSeek (Free Official API)
+
+| Model                             | Purpose                                   | API                                           |
+| --------------------------------- | ----------------------------------------- | --------------------------------------------- |
+| DeepSeek V3 (`deepseek-chat`)     | General-purpose LLM, coding, fast replies | [DeepSeek API](https://platform.deepseek.com) |
+| DeepSeek R1 (`deepseek-reasoner`) | Advanced chain-of-thought reasoning       | [DeepSeek API](https://platform.deepseek.com) |
+
+> 💡 Get your **free** API key at [platform.deepseek.com](https://platform.deepseek.com) and add it to `.env` as `DEEPSEEK_API_KEY=sk-...`.
+> Both models work via the official DeepSeek REST API (OpenAI-compatible). No NVIDIA key required.
 
 > 💡 **Adding new providers?** Implement the base interface in `providers/base.py` and register your provider in the config.
 

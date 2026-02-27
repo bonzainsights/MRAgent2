@@ -13,20 +13,37 @@ logger = get_logger("providers")
 
 # Lazy-loaded singletons
 _llm_provider = None
+_deepseek_provider = None
 _image_provider = None
 _tts_provider = None
 _stt_provider = None
 _search_provider = None
 
 
-def get_llm():
-    """Get the NVIDIA LLM provider (singleton)."""
+def get_llm(model: str = None):
+    """
+    Get the appropriate LLM provider.
+    Routes to DeepSeek provider for deepseek-* models, NVIDIA for everything else.
+    """
+    if model and model.startswith("deepseek"):
+        return get_deepseek_llm()
+
     global _llm_provider
     if _llm_provider is None:
         from providers.nvidia_llm import NvidiaLLMProvider
         _llm_provider = NvidiaLLMProvider()
         logger.info("LLM provider ready")
     return _llm_provider
+
+
+def get_deepseek_llm():
+    """Get the DeepSeek LLM provider (singleton)."""
+    global _deepseek_provider
+    if _deepseek_provider is None:
+        from providers.deepseek_llm import DeepSeekLLMProvider
+        _deepseek_provider = DeepSeekLLMProvider()
+        logger.info("DeepSeek LLM provider ready")
+    return _deepseek_provider
 
 
 def get_image():

@@ -81,6 +81,9 @@ LANGSEARCH_API_KEY = os.getenv("LANGSEARCH_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
+# DeepSeek (free official API — https://platform.deepseek.com)
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+
 # ──────────────────────────────────────────────
 # Identity Configuration
 # ──────────────────────────────────────────────
@@ -280,6 +283,28 @@ MODEL_REGISTRY = {
         "type": "stt",
         "description": "Groq: Super-fast Whisper v3 transcription",
     },
+
+    # ── DeepSeek (free official API) ──
+    "deepseek-chat": {
+        "id": "deepseek-chat",
+        "key": "deepseek_api_key",
+        "type": "llm",
+        "categories": ["thinking", "fast", "code"],
+        "context_window": 64_000,
+        "supports_tools": True,
+        "description": "DeepSeek V3 — fast & capable general-purpose LLM (Free API)",
+        "provider": "deepseek",
+    },
+    "deepseek-reasoner": {
+        "id": "deepseek-reasoner",
+        "key": "deepseek_api_key",
+        "type": "llm",
+        "categories": ["thinking"],
+        "context_window": 64_000,
+        "supports_tools": False,
+        "description": "DeepSeek R1 — advanced chain-of-thought reasoning (Free API)",
+        "provider": "deepseek",
+    },
 }
 
 
@@ -320,7 +345,16 @@ def get_api_key(model_name: str) -> str:
     """Get the API key for a given model name."""
     if model_name not in MODEL_REGISTRY:
         raise ValueError(f"Unknown model: {model_name}. Available: {list(MODEL_REGISTRY.keys())}")
-    key_name = MODEL_REGISTRY[model_name]["key"]
+    model_info = MODEL_REGISTRY[model_name]
+    key_name = model_info["key"]
+
+    # DeepSeek models use their own API key
+    if model_info.get("provider") == "deepseek":
+        key = DEEPSEEK_API_KEY
+        if not key:
+            raise ValueError(f"DEEPSEEK_API_KEY not set in .env")
+        return key
+
     key = NVIDIA_KEYS.get(key_name, "")
     if not key:
         raise ValueError(f"API key not set for {model_name} (env var: NVIDIA_{key_name.upper()})")
@@ -344,7 +378,10 @@ def get_available_models() -> dict:
     available = {}
     for name, info in MODEL_REGISTRY.items():
         key_name = info["key"]
-        if NVIDIA_KEYS.get(key_name):
+        if info.get("provider") == "deepseek":
+            if DEEPSEEK_API_KEY:
+                available[name] = info
+        elif NVIDIA_KEYS.get(key_name):
             available[name] = info
     return available
 
@@ -354,7 +391,12 @@ def validate_config() -> dict:
     report = {"valid": [], "missing": [], "warnings": []}
     for name, info in MODEL_REGISTRY.items():
         key_name = info["key"]
-        if NVIDIA_KEYS.get(key_name):
+        if info.get("provider") == "deepseek":
+            if DEEPSEEK_API_KEY:
+                report["valid"].append(name)
+            else:
+                report["missing"].append(name)
+        elif NVIDIA_KEYS.get(key_name):
             report["valid"].append(name)
         else:
             report["missing"].append(name)
@@ -363,6 +405,8 @@ def validate_config() -> dict:
         report["warnings"].append("BRAVE_SEARCH_API_KEY not set — web search disabled")
     if not TELEGRAM_BOT_TOKEN:
         report["warnings"].append("TELEGRAM_BOT_TOKEN not set — Telegram bot disabled")
+    if not DEEPSEEK_API_KEY:
+        report["warnings"].append("DEEPSEEK_API_KEY not set — DeepSeek models unavailable")
 
     return report
 
