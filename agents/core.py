@@ -163,7 +163,7 @@ class AgentCore:
 
         Returns the final text response after all tool calls are resolved.
         """
-        llm = get_llm()
+        llm = get_llm(model=model)
         
         # Check if model supports tools
         model_info = MODEL_REGISTRY.get(model, {})
