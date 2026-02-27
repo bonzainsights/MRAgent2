@@ -164,7 +164,8 @@ class AgentCore:
         Returns the final text response after all tool calls are resolved.
         """
         llm = get_llm(model=model)
-        
+        _fallback_llm = None  # lazy-loaded NVIDIA fallback for non-NVIDIA providers
+
         # Check if model supports tools
         model_info = MODEL_REGISTRY.get(model, {})
         supports_tools = model_info.get("supports_tools", False)
@@ -178,16 +179,50 @@ class AgentCore:
 
             logger.debug(f"Agent loop iteration {iteration + 1}, messages: {len(messages)}")
 
-            if stream:
-                response = self._handle_streaming(llm, messages, model, tools_schema)
-            else:
-                response = llm.chat(
-                    messages=messages,
-                    model=model,
-                    stream=False,
-                    tools=tools_schema,
-                    temperature=0.7,
-                )
+            try:
+                if stream:
+                    response = self._handle_streaming(llm, messages, model, tools_schema)
+                else:
+                    response = llm.chat(
+                        messages=messages,
+                        model=model,
+                        stream=False,
+                        tools=tools_schema,
+                        temperature=0.7,
+                    )
+            except Exception as e:
+                # If a non-NVIDIA provider fails (e.g. DeepSeek 402 Insufficient Balance),
+                # fall back to the NVIDIA provider so the agent keeps responding.
+                provider_name = getattr(llm, "name", "unknown")
+                if provider_name != "nvidia_llm":
+                    logger.warning(
+                        f"Provider '{provider_name}' failed ({e}). "
+                        f"Falling back to NVIDIA LLM..."
+                    )
+                    self._emit(
+                        "info",
+                        f"⚠️ {provider_name} unavailable ({type(e).__name__}). "
+                        f"Falling back to NVIDIA..."
+                    )
+                    from providers import get_llm as _get_llm
+                    llm = _get_llm()           # always returns NVIDIA
+                    _fallback_llm = llm
+                    fallback_model = "llama-3.3-70b"
+                    model_info = MODEL_REGISTRY.get(fallback_model, {})
+                    supports_tools = model_info.get("supports_tools", True)
+                    tools_schema = self.tool_registry.get_openai_tools() if supports_tools else None
+                    if stream:
+                        response = self._handle_streaming(llm, messages, fallback_model, tools_schema)
+                    else:
+                        response = llm.chat(
+                            messages=messages,
+                            model=fallback_model,
+                            stream=False,
+                            tools=tools_schema,
+                            temperature=0.7,
+                        )
+                else:
+                    raise  # NVIDIA itself failed — let the outer handler deal with it
 
             # Check for tool calls
             tool_calls = response.get("tool_calls", [])
