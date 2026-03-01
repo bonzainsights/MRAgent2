@@ -52,6 +52,7 @@
 | 🛡️ **Injection Defense** | Structural tagging & sanitization of untrusted external data         | ✅ Implemented |
 | ⚡ **Smart Autonomy**    | Tiered trust levels (cautious/balanced/autonomous) for 24/7 ops      | ✅ Implemented |
 | 🧭 **Screen Guidance**   | `/guide` command — capture screen & get AI-powered guidance          | ✅ Implemented |
+| 📜 **Chat History**      | `/load` command — reload and continue previous conversations         | ✅ Implemented |
 
 ---
 

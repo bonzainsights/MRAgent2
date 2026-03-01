@@ -50,3 +50,8 @@ MRAgent Development Log
 2026-02-16 13:42 — Added generate_image tool for LLM (9045347)
   - New tools/image_gen.py wraps NVIDIA image provider
   - LLM can now generate images in chat (no need for /image)
+
+2026-03-01 11:58 — Added Chat History Continuation (CLI & Web)
+  - Implemented core.load_chat() to restore context manager state
+  - Added /load command to CLI (interactive menu, 'last', or specific ID)
+  - Fixed Web UI /api/history/<chat_id> to actually restore LLM context
