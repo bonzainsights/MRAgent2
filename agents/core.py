@@ -13,6 +13,7 @@ import base64
 from pathlib import Path
 from typing import Callable, Generator
 
+from memory.chat_store import ChatStore
 from agents.context_manager import ContextManager
 from agents.model_selector import ModelSelector
 from agents.prompt_enhancer import PromptEnhancer
@@ -51,6 +52,7 @@ class AgentCore:
         self.prompt_enhancer = PromptEnhancer()
         self.context_manager = ContextManager()
         self.tool_registry: ToolRegistry = create_tool_registry()
+        self.chat_store = ChatStore()
         self.model_override = model_override
         self.chat_id = generate_id("chat_")
         self._response_callbacks: list[Callable] = []
@@ -132,8 +134,10 @@ class AgentCore:
                 content_array = enhanced
             
             self.context_manager.add_message({"role": "user", "content": content_array})
+            self.chat_store.save_message(self.chat_id, "user", json.dumps(content_array))
         else:
             self.context_manager.add_message({"role": "user", "content": enhanced})
+            self.chat_store.save_message(self.chat_id, "user", enhanced)
 
         # 2. Select model
         model = self.model_selector.select(user_message, override=self.model_override)
@@ -147,6 +151,7 @@ class AgentCore:
 
         # 4. Store assistant response
         self.context_manager.add_message({"role": "assistant", "content": final_response})
+        self.chat_store.save_message(self.chat_id, "assistant", final_response)
 
         turn_duration = time.time() - turn_start
         logger.info(f"Turn complete: {turn_duration:.1f}s, response: {len(final_response)} chars")
@@ -298,6 +303,11 @@ class AgentCore:
             "tool_calls": normalized_tool_calls,
         }
         self.context_manager.add_message(assistant_msg)
+        self.chat_store.save_message(
+            self.chat_id, "assistant", 
+            content=assistant_msg["content"] or "", 
+            tool_calls=normalized_tool_calls
+        )
 
         trust_level = AUTONOMY_SETTINGS.get("trust_level", "balanced")
 
@@ -474,6 +484,11 @@ class AgentCore:
                 "content": result,
             }
             self.context_manager.add_message(tool_msg)
+            self.chat_store.save_message(
+                self.chat_id, "tool", 
+                content=result, 
+                tool_call_id=tc_id
+            )
 
         logger.info(f"Executed {len(tool_calls)} tool call(s) [trust={trust_level}]")
 

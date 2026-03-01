@@ -148,10 +148,6 @@ class CLIInterface:
 
                 print()  # Blank line after response
 
-                # Save to chat store
-                self.chat_store.save_message(self.agent.chat_id, "user", user_input)
-                self.chat_store.save_message(self.agent.chat_id, "assistant", response)
-
                 # Show context usage
                 stats = self.agent.context_manager.get_stats()
                 self._print_dim(
@@ -231,7 +227,7 @@ class CLIInterface:
                 for model_id, info in MODEL_REGISTRY.items():
                     if info.get("type") in ("llm", "vlm"):
                         cats = ", ".join(info.get("categories", []))
-                        label = f"{model_id:<20} [dim]({cats})[/dim]"
+                        label = f"{model_id:<20} <style fg='gray'>({cats})</style>"
                         choices.append({"id": model_id, "label": label})
                 
                 if not choices:
@@ -261,10 +257,10 @@ class CLIInterface:
                 choices = []
                 for m in ("auto", "thinking", "fast", "code", "browsing"):
                     if m == "auto":
-                        label = "auto       [dim](Dynamic fallback routing)[/dim]"
+                        label = "auto       <style fg='gray'>(Dynamic fallback routing)</style>"
                     else:
                         default = ModelSelector.get_default_for_mode(m)
-                        extra = f" [dim]({default})[/dim]"
+                        extra = f" <style fg='gray'>({default})</style>"
                         label = f"{m:<10} {extra}"
                     choices.append({"id": m, "label": label})
                 
@@ -553,13 +549,13 @@ class CLIInterface:
         self._print_info("\n🧩 Skills Configuration")
         
         choices = [
-            {"id": "search", "label": "Search Provider    [dim](Brave/Google/LangSearch)[/dim]"},
-            {"id": "google_image", "label": "Google AI Studio   [dim](Image Generation)[/dim]"},
-            {"id": "telegram", "label": "Telegram Bot       [dim](@BotFather)[/dim]"},
-            {"id": "agentmail", "label": "AgentMail          [dim](Email via API)[/dim]"},
-            {"id": "nvidia", "label": "NVIDIA API         [dim](Primary LLM key)[/dim]"},
-            {"id": "groq", "label": "Groq API           [dim](Whisper Voice STT)[/dim]"},
-            {"id": "cancel", "label": "[dim]Cancel...[/dim]"}
+            {"id": "search", "label": "Search Provider    <style fg='gray'>(Brave/Google/LangSearch)</style>"},
+            {"id": "google_image", "label": "Google AI Studio   <style fg='gray'>(Image Generation)</style>"},
+            {"id": "telegram", "label": "Telegram Bot       <style fg='gray'>(@BotFather)</style>"},
+            {"id": "agentmail", "label": "AgentMail          <style fg='gray'>(Email via API)</style>"},
+            {"id": "nvidia", "label": "NVIDIA API         <style fg='gray'>(Primary LLM key)</style>"},
+            {"id": "groq", "label": "Groq API           <style fg='gray'>(Whisper Voice STT)</style>"},
+            {"id": "cancel", "label": "<style fg='gray'>Cancel...</style>"}
         ]
         
         choice = self._interactive_menu("Select a skill to configure:", choices)
@@ -626,10 +622,10 @@ class CLIInterface:
         self._print_info(f"\n⚡ Autonomy Configuration (current: {current})")
 
         choices = [
-            {"id": "cautious",   "label": "🔒 cautious    [dim](Ask before every non-read command)[/dim]"},
-            {"id": "balanced",   "label": "⚖️  balanced    [dim](Auto-run safe patterns, ask for risky)[/dim]"},
-            {"id": "autonomous", "label": "⚡ autonomous  [dim](Run everything, log only — for 24/7)[/dim]"},
-            {"id": "cancel",     "label": "[dim]Cancel...[/dim]"},
+            {"id": "cautious",   "label": "🔒 cautious    <style fg='gray'>(Ask before every non-read command)</style>"},
+            {"id": "balanced",   "label": "⚖️  balanced    <style fg='gray'>(Auto-run safe patterns, ask for risky)</style>"},
+            {"id": "autonomous", "label": "⚡ autonomous  <style fg='gray'>(Run everything, log only — for 24/7)</style>"},
+            {"id": "cancel",     "label": "<style fg='gray'>Cancel...</style>"},
         ]
 
         choice = self._interactive_menu(f"Select trust level (current: {current}):", choices)
@@ -687,10 +683,10 @@ class CLIInterface:
         self._print_info("\n🔍 Search Provider Configuration")
         
         choices = [
-            {"id": "google", "label": "Google Search      [dim](requires API Key + CSE ID)[/dim]"},
-            {"id": "brave", "label": "Brave Search       [dim](requires API Key)[/dim]"},
-            {"id": "langsearch", "label": "LangSearch         [dim](requires API Key)[/dim]"},
-            {"id": "cancel", "label": "[dim]Cancel...[/dim]"}
+            {"id": "google", "label": "Google Search      <style fg='gray'>(requires API Key + CSE ID)</style>"},
+            {"id": "brave", "label": "Brave Search       <style fg='gray'>(requires API Key)</style>"},
+            {"id": "langsearch", "label": "LangSearch         <style fg='gray'>(requires API Key)</style>"},
+            {"id": "cancel", "label": "<style fg='gray'>Cancel...</style>"}
         ]
         
         choice = self._interactive_menu("Select provider:", choices)
@@ -802,7 +798,7 @@ class CLIInterface:
         self._print_info("📜 Recent chats:")
         for chat in chats:
             msg_count = self.chat_store.get_message_count(chat["id"])
-            print(f"  • {chat['title']} ({msg_count} msgs) — {chat['updated_at']} [dim]ID: {chat['id']}[/dim]")
+            print(f"  • {chat['title']} ({msg_count} msgs) — {chat['updated_at']} <style fg='gray'>ID: {chat['id']}</style>")
 
     def _load_chat(self, arg: str):
         """Load a previous chat."""
@@ -827,7 +823,7 @@ class CLIInterface:
             choices = []
             for chat in chats:
                 msg_count = self.chat_store.get_message_count(chat["id"])
-                label = f"{chat['title'][:30]:<30} [dim]({msg_count} msgs) {chat['updated_at'][:16]}[/dim]"
+                label = f"{chat['title'][:30]:<30} <style fg='gray'>({msg_count} msgs) {chat['updated_at'][:16]}</style>"
                 choices.append({"id": chat["id"], "label": label})
                 
             chat_id = self._interactive_menu("Select a chat to load:", choices)
@@ -842,6 +838,7 @@ class CLIInterface:
             return
 
         self.agent.load_chat(chat_id, messages)
+        # Let's fix lines around 839 as well if they exist
         self._print_info(f"✅ Loaded chat: {chat_id} ({len(messages)} messages)")
 
     def _show_stats(self):
@@ -905,13 +902,13 @@ class CLIInterface:
     def _print_info(self, text: str):
         """Print an info message."""
         if self.has_rich and self.console:
-            self.console.print(f"[dim]{text}[/dim]")
+            self.console.print(f"<style fg='gray'>{text}</style>")
         else:
             print(text)
 
     def _print_dim(self, text: str):
         """Print dimmed text."""
         if self.has_rich and self.console:
-            self.console.print(f"[dim]{text}[/dim]")
+            self.console.print(f"<style fg='gray'>{text}</style>")
         else:
             print(f"\033[90m{text}\033[0m")

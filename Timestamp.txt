@@ -55,3 +55,4 @@ MRAgent Development Log
   - Implemented core.load_chat() to restore context manager state
   - Added /load command to CLI (interactive menu, 'last', or specific ID)
   - Fixed Web UI /api/history/<chat_id> to actually restore LLM context
+  - Fixed major bug where tools were forgotten: migrated ChatStore saving to AgentCore internally to ensure all tool chains/results are preserved across loads.

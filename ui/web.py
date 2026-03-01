@@ -111,8 +111,6 @@ def create_app() -> Flask:
 
         try:
             response = _agent.chat(message, stream=False)
-            _chat_store.save_message(_agent.chat_id, "user", message)
-            _chat_store.save_message(_agent.chat_id, "assistant", response)
             return jsonify({
                 "response": response,
                 "stats": _agent.get_stats(),
@@ -144,8 +142,6 @@ def create_app() -> Flask:
             def _run():
                 try:
                     response = _agent.chat(message, stream=True)
-                    _chat_store.save_message(_agent.chat_id, "user", message)
-                    _chat_store.save_message(_agent.chat_id, "assistant", response)
                     # Auto-title chat from first user message
                     chat_info = _chat_store.get_chat(_agent.chat_id)
                     if chat_info and chat_info.get("title") == "New Chat":
@@ -355,8 +351,6 @@ def create_app() -> Flask:
             
             # Chat with agent
             response = _agent.chat(transcript, stream=True)
-            _chat_store.save_message(_agent.chat_id, "user", transcript)
-            _chat_store.save_message(_agent.chat_id, "assistant", response)
 
             # Generate TTS
             audio_base64 = None
