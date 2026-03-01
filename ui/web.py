@@ -268,8 +268,8 @@ def create_app() -> Flask:
     def history_detail(chat_id):
         """Load messages for a specific chat and switch to it."""
         messages = _chat_store.get_messages(chat_id)
-        # Switch agent to this chat so new messages go to the right place
-        _agent.chat_id = chat_id
+        # Switch agent to this chat so new messages go to the right place and load context
+        _agent.load_chat(chat_id, messages)
         return jsonify(messages)
 
     @app.route("/api/models")

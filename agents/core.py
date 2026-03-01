@@ -581,6 +581,19 @@ class AgentCore:
         logger.info(f"New chat started: {old_id} → {self.chat_id}")
         self._emit("info", "🔄 New chat started")
 
+    def load_chat(self, chat_id: str, messages: list[dict]):
+        """Load an existing chat history."""
+        self.chat_id = chat_id
+        self.context_manager.clear()
+
+        # Re-add system prompt
+        system_msg = self.prompt_enhancer.get_system_prompt()
+        self.context_manager.add_message(system_msg)
+
+        # Add loaded messages
+        self.context_manager.add_messages(messages)
+        self._emit("info", f"🔄 Loaded chat history ({len(messages)} messages)")
+
     def get_stats(self) -> dict:
         """Return agent statistics."""
         return {

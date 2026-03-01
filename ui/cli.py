@@ -27,6 +27,7 @@ COMMANDS = {
     "/screen":   "Capture and analyze the screen",
     "/guide":    "Screen guidance — see your screen and help (e.g. /guide how do I fix this?)",
     "/history":  "Show recent chat history",
+    "/load":     "Load a previous chat (e.g. /load last or /load <id>)",
     "/stats":    "Show agent statistics",
     "/status":   "Show active config (model, providers, trust level)",
     "/clear":    "Clear the screen",
@@ -325,6 +326,9 @@ class CLIInterface:
 
         elif command == "/history":
             self._show_history()
+
+        elif command == "/load":
+            self._load_chat(arg)
 
         elif command == "/stats":
             self._show_stats()
@@ -798,7 +802,47 @@ class CLIInterface:
         self._print_info("📜 Recent chats:")
         for chat in chats:
             msg_count = self.chat_store.get_message_count(chat["id"])
-            print(f"  • {chat['title']} ({msg_count} msgs) — {chat['updated_at']}")
+            print(f"  • {chat['title']} ({msg_count} msgs) — {chat['updated_at']} [dim]ID: {chat['id']}[/dim]")
+
+    def _load_chat(self, arg: str):
+        """Load a previous chat."""
+        chats = self.chat_store.list_chats(limit=30)
+        if not chats:
+            self._print_info("No chat history available.")
+            return
+
+        chat_id = None
+        if arg.lower() == "last" and chats:
+            chat_id = chats[0]["id"]
+        elif arg:
+            # Check if arg is a valid ID from the DB
+            chat = self.chat_store.get_chat(arg)
+            if chat:
+                chat_id = chat["id"]
+            else:
+                self._print_info(f"❌ Chat ID '{arg}' not found.")
+                return
+        else:
+            # Interactive menu
+            choices = []
+            for chat in chats:
+                msg_count = self.chat_store.get_message_count(chat["id"])
+                label = f"{chat['title'][:30]:<30} [dim]({msg_count} msgs) {chat['updated_at'][:16]}[/dim]"
+                choices.append({"id": chat["id"], "label": label})
+                
+            chat_id = self._interactive_menu("Select a chat to load:", choices)
+
+        if not chat_id:
+            self._print_info("Cancelled.")
+            return
+
+        messages = self.chat_store.get_messages(chat_id)
+        if not messages:
+            self._print_info("❌ Chat is empty or could not be loaded.")
+            return
+
+        self.agent.load_chat(chat_id, messages)
+        self._print_info(f"✅ Loaded chat: {chat_id} ({len(messages)} messages)")
 
     def _show_stats(self):
         """Show agent and system stats."""
