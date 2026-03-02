@@ -42,10 +42,10 @@ def create_tool_registry() -> ToolRegistry:
     from tools.screen import ScreenCaptureTool
     registry.register(ScreenCaptureTool())
 
-    # Browser
-    from tools.browser import FetchWebPageTool, SearchWebTool
-    registry.register(FetchWebPageTool())
-    registry.register(SearchWebTool())
+    # Browser / Web (via newly organized WebSkill)
+    from skills.web import WebSkill
+    for tool in WebSkill().get_tools():
+        registry.register(tool)
 
     # PDF Reader
     from tools.pdf_reader import ReadPDFTool
