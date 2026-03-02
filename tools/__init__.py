@@ -55,6 +55,10 @@ def create_tool_registry() -> ToolRegistry:
     from tools.image_gen import GenerateImageTool
     registry.register(GenerateImageTool())
 
+    # Cron Scheduler
+    from tools.cron_tool import CronTool
+    registry.register(CronTool())
+
     # Skills
     from skills.agentmail import AgentMailSkill
     for tool in AgentMailSkill().get_tools():
